@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import AppShell from "../../components/layout/AppShell";
@@ -26,7 +26,35 @@ function SuccessIcon() {
   );
 }
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessLoading() {
+  return (
+    <AppShell
+      maxWidth={600}
+      fullHeight
+      className="payment-success-page-shell"
+      panelClassName="payment-success-panel"
+    >
+      <div className="payment-success-content">
+        <TopBar />
+
+        <section className="payment-success-loading">
+          <span
+            className="payment-success-spinner"
+            aria-hidden="true"
+          />
+
+          <p className="tonari-copy">
+            お支払い状況を確認しています…
+          </p>
+        </section>
+      </div>
+
+      <PaymentSuccessStyles />
+    </AppShell>
+  );
+}
+
+function PaymentSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -44,10 +72,6 @@ export default function PaymentSuccessPage() {
       return;
     }
 
-    /*
-     * 現時点ではStripeから正常に戻ったことを確認しています。
-     * 契約状態の確定は、次に作成するstripe-webhookで行います。
-     */
     setState("success");
   }, [searchParams]);
 
@@ -138,141 +162,155 @@ export default function PaymentSuccessPage() {
         )}
       </div>
 
-      <style jsx global>{`
+      <PaymentSuccessStyles />
+    </AppShell>
+  );
+}
+
+function PaymentSuccessStyles() {
+  return (
+    <style jsx global>{`
+      .payment-success-page-shell {
+        max-width: 600px;
+      }
+
+      .payment-success-panel {
+        min-height: calc(100vh - 84px);
+        border-radius: 34px;
+      }
+
+      .payment-success-content {
+        padding: 24px 26px 34px;
+      }
+
+      .payment-success-loading {
+        display: grid;
+        min-height: 560px;
+        place-items: center;
+        align-content: center;
+        gap: 18px;
+        text-align: center;
+      }
+
+      .payment-success-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--tonari-border);
+        border-top-color: var(--tonari-sage-deep);
+        border-radius: 50%;
+        animation: payment-success-spin 850ms linear infinite;
+      }
+
+      .payment-success-heading {
+        margin-top: 54px;
+        text-align: center;
+      }
+
+      .payment-success-icon {
+        display: block;
+        width: 82px;
+        height: 82px;
+        margin: 0 auto 22px;
+        color: var(--tonari-sage-deep);
+      }
+
+      .payment-success-icon svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .payment-success-title {
+        margin: 16px 0 0;
+        color: var(--tonari-text);
+        font-family: "Zen Old Mincho", serif;
+        font-size: clamp(31px, 8vw, 40px);
+        font-weight: 600;
+        line-height: 1.55;
+      }
+
+      .payment-success-heading-copy {
+        margin-top: 14px;
+      }
+
+      .payment-success-card {
+        margin-top: 30px;
+        padding: 25px 22px;
+        border: 1px solid #d7e2d3;
+        border-radius: 23px;
+        background: #f2f7f0;
+        box-shadow: var(--tonari-shadow-sm);
+        text-align: center;
+      }
+
+      .payment-success-card-title {
+        margin: 0;
+        color: var(--tonari-text);
+        font-family: "Zen Old Mincho", serif;
+        font-size: 21px;
+        font-weight: 600;
+        line-height: 1.6;
+      }
+
+      .payment-success-card-copy {
+        margin: 12px 0 0;
+        color: var(--tonari-text-soft);
+        font-size: 14px;
+        line-height: 1.85;
+      }
+
+      .payment-success-button {
+        margin-top: 22px;
+      }
+
+      .payment-success-error {
+        margin-top: 40px;
+      }
+
+      @keyframes payment-success-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 560px) {
         .payment-success-page-shell {
-          max-width: 600px;
+          min-height: 100vh;
         }
 
         .payment-success-panel {
-          min-height: calc(100vh - 84px);
-          border-radius: 34px;
+          min-height: 100vh;
+          border: 0;
+          border-radius: 0;
+          box-shadow: none;
         }
 
         .payment-success-content {
-          padding: 24px 26px 34px;
-        }
-
-        .payment-success-loading {
-          display: grid;
-          min-height: 560px;
-          place-items: center;
-          align-content: center;
-          gap: 18px;
-          text-align: center;
-        }
-
-        .payment-success-spinner {
-          width: 40px;
-          height: 40px;
-          border: 4px solid var(--tonari-border);
-          border-top-color: var(--tonari-sage-deep);
-          border-radius: 50%;
-          animation: payment-success-spin 850ms linear infinite;
+          padding: 20px 18px 30px;
         }
 
         .payment-success-heading {
-          margin-top: 54px;
-          text-align: center;
-        }
-
-        .payment-success-icon {
-          display: block;
-          width: 82px;
-          height: 82px;
-          margin: 0 auto 22px;
-          color: var(--tonari-sage-deep);
-        }
-
-        .payment-success-icon svg {
-          display: block;
-          width: 100%;
-          height: 100%;
+          margin-top: 46px;
         }
 
         .payment-success-title {
-          margin: 16px 0 0;
-          color: var(--tonari-text);
-          font-family: "Zen Old Mincho", serif;
-          font-size: clamp(31px, 8vw, 40px);
-          font-weight: 600;
-          line-height: 1.55;
+          font-size: 31px;
         }
+      }
 
-        .payment-success-heading-copy {
-          margin-top: 14px;
+      @media (prefers-reduced-motion: reduce) {
+        .payment-success-spinner {
+          animation: none;
         }
+      }
+    `}</style>
+  );
+}
 
-        .payment-success-card {
-          margin-top: 30px;
-          padding: 25px 22px;
-          border: 1px solid #d7e2d3;
-          border-radius: 23px;
-          background: #f2f7f0;
-          box-shadow: var(--tonari-shadow-sm);
-          text-align: center;
-        }
-
-        .payment-success-card-title {
-          margin: 0;
-          color: var(--tonari-text);
-          font-family: "Zen Old Mincho", serif;
-          font-size: 21px;
-          font-weight: 600;
-          line-height: 1.6;
-        }
-
-        .payment-success-card-copy {
-          margin: 12px 0 0;
-          color: var(--tonari-text-soft);
-          font-size: 14px;
-          line-height: 1.85;
-        }
-
-        .payment-success-button {
-          margin-top: 22px;
-        }
-
-        .payment-success-error {
-          margin-top: 40px;
-        }
-
-        @keyframes payment-success-spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @media (max-width: 560px) {
-          .payment-success-page-shell {
-            min-height: 100vh;
-          }
-
-          .payment-success-panel {
-            min-height: 100vh;
-            border: 0;
-            border-radius: 0;
-            box-shadow: none;
-          }
-
-          .payment-success-content {
-            padding: 20px 18px 30px;
-          }
-
-          .payment-success-heading {
-            margin-top: 46px;
-          }
-
-          .payment-success-title {
-            font-size: 31px;
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .payment-success-spinner {
-            animation: none;
-          }
-        }
-      `}</style>
-    </AppShell>
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<PaymentSuccessLoading />}>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
