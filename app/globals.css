@@ -1,0 +1,462 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Zen+Old+Mincho:wght@500;600&display=swap");
+
+:root {
+  --tonari-bg: #f6ede6;
+  --tonari-bg-soft: #fbf6f2;
+  --tonari-surface: #fffdfb;
+  --tonari-surface-soft: #fbf4ee;
+
+  --tonari-peach: #ebdccf;
+  --tonari-apricot: #dca184;
+  --tonari-sage: #c9dcc9;
+  --tonari-sage-deep: #7f9877;
+  --tonari-taupe: #a38b7a;
+  --tonari-brown: #6b5b4d;
+  --tonari-brown-soft: #8e7868;
+
+  --tonari-text: #463a33;
+  --tonari-text-soft: #7f6d64;
+  --tonari-border: #eadfd7;
+  --tonari-danger: #a95a50;
+
+  --tonari-shadow-sm: 0 8px 24px rgba(94, 73, 60, 0.07);
+  --tonari-shadow-md: 0 16px 40px rgba(94, 73, 60, 0.1);
+  --tonari-shadow-lg: 0 28px 70px rgba(94, 73, 60, 0.13);
+
+  --tonari-radius-sm: 16px;
+  --tonari-radius-md: 22px;
+  --tonari-radius-lg: 30px;
+  --tonari-radius-pill: 999px;
+
+  --tonari-content-width: 720px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--tonari-bg);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--tonari-text);
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.9), transparent 32%),
+    radial-gradient(circle at 88% 12%, rgba(235, 220, 207, 0.55), transparent 30%),
+    linear-gradient(180deg, #fffaf6 0%, var(--tonari-bg) 100%);
+  font-family: "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(220, 161, 132, 0.24);
+}
+
+/* Layout */
+
+.tonari-page {
+  min-height: 100vh;
+  padding: 24px 16px 36px;
+}
+
+.tonari-shell {
+  width: 100%;
+  max-width: var(--tonari-content-width);
+  margin: 0 auto;
+  animation: tonari-fade-up 360ms ease both;
+}
+
+.tonari-panel {
+  overflow: hidden;
+  border: 1px solid rgba(234, 223, 215, 0.92);
+  border-radius: var(--tonari-radius-lg);
+  background: rgba(255, 253, 251, 0.96);
+  box-shadow: var(--tonari-shadow-lg);
+  backdrop-filter: blur(14px);
+}
+
+.tonari-panel-body {
+  padding: 30px 26px;
+}
+
+/* Brand */
+
+.tonari-brand {
+  margin: 0;
+  color: var(--tonari-brown);
+  font-family: "Zen Old Mincho", serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+}
+
+.tonari-brand-large {
+  margin: 0;
+  color: var(--tonari-brown);
+  font-family: "Zen Old Mincho", serif;
+  font-size: clamp(44px, 11vw, 68px);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+}
+
+.tonari-tagline {
+  margin: 0;
+  color: var(--tonari-brown-soft);
+  font-family: "Zen Old Mincho", serif;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+}
+
+.tonari-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  margin: 0;
+  padding: 7px 13px;
+  border-radius: var(--tonari-radius-pill);
+  background: var(--tonari-surface-soft);
+  color: var(--tonari-brown-soft);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.tonari-title {
+  margin: 0;
+  color: var(--tonari-text);
+  font-family: "Zen Old Mincho", serif;
+  font-size: clamp(30px, 7vw, 42px);
+  font-weight: 600;
+  line-height: 1.48;
+  letter-spacing: 0.015em;
+}
+
+.tonari-copy {
+  margin: 0;
+  color: var(--tonari-text-soft);
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+/* Cards */
+
+.tonari-card {
+  border: 1px solid var(--tonari-border);
+  border-radius: var(--tonari-radius-md);
+  background: var(--tonari-surface);
+  box-shadow: var(--tonari-shadow-sm);
+}
+
+.tonari-card-soft {
+  border: 1px solid var(--tonari-border);
+  border-radius: var(--tonari-radius-md);
+  background: linear-gradient(145deg, #fffdfb 0%, #fbf3ed 100%);
+}
+
+.tonari-card-sage {
+  border: 1px solid #d6e2d3;
+  border-radius: var(--tonari-radius-md);
+  background: #f3f7f1;
+}
+
+.tonari-card-peach {
+  border: 1px solid #ecd7ca;
+  border-radius: var(--tonari-radius-md);
+  background: #fff8f3;
+}
+
+.tonari-card-interactive {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.tonari-card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: #dfcfc4;
+  box-shadow: var(--tonari-shadow-md);
+}
+
+/* Buttons */
+
+.tonari-button {
+  display: inline-flex;
+  min-height: 56px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 18px;
+  padding: 15px 22px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    opacity 180ms ease;
+}
+
+.tonari-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.tonari-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.tonari-button-primary {
+  background: var(--tonari-sage-deep);
+  color: #ffffff;
+  box-shadow: 0 12px 26px rgba(127, 152, 119, 0.24);
+}
+
+.tonari-button-brown {
+  background: var(--tonari-brown);
+  color: #ffffff;
+  box-shadow: 0 12px 26px rgba(107, 91, 77, 0.23);
+}
+
+.tonari-button-soft {
+  border: 1px solid var(--tonari-border);
+  background: var(--tonari-surface);
+  color: var(--tonari-brown);
+  box-shadow: var(--tonari-shadow-sm);
+}
+
+.tonari-icon-button {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--tonari-border);
+  border-radius: 50%;
+  background: var(--tonari-surface);
+  cursor: pointer;
+  box-shadow: var(--tonari-shadow-sm);
+}
+
+/* Forms */
+
+.tonari-textarea,
+.tonari-input {
+  width: 100%;
+  border: 1px solid #dfd0c7;
+  border-radius: 18px;
+  outline: 0;
+  background: #fffdfb;
+  color: var(--tonari-text);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.tonari-textarea {
+  min-height: 190px;
+  padding: 18px;
+  resize: none;
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.tonari-input {
+  min-height: 54px;
+  padding: 0 16px;
+  font-size: 16px;
+}
+
+.tonari-textarea:focus,
+.tonari-input:focus {
+  border-color: #9fb194;
+  box-shadow: 0 0 0 4px rgba(159, 177, 148, 0.15);
+}
+
+.tonari-textarea::placeholder,
+.tonari-input::placeholder {
+  color: #b29e93;
+}
+
+/* Status */
+
+.tonari-alert {
+  border-radius: 18px;
+  padding: 16px 18px;
+  font-size: 14px;
+  line-height: 1.8;
+  text-align: center;
+}
+
+.tonari-alert-error {
+  border: 1px solid #efd0c8;
+  background: #fff1ee;
+  color: var(--tonari-danger);
+}
+
+.tonari-alert-info {
+  border: 1px solid var(--tonari-border);
+  background: var(--tonari-surface-soft);
+  color: var(--tonari-text-soft);
+}
+
+/* Footer */
+
+.tonari-footer-copy {
+  margin: 20px 0 0;
+  color: #a18e84;
+  font-family: "Zen Old Mincho", serif;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+/* Utilities */
+
+.tonari-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.tonari-row {
+  display: flex;
+  align-items: center;
+}
+
+.tonari-between {
+  justify-content: space-between;
+}
+
+.tonari-center {
+  text-align: center;
+}
+
+.tonari-muted {
+  color: var(--tonari-text-soft);
+}
+
+@keyframes tonari-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 560px) {
+  .tonari-page {
+    padding: 16px 12px 28px;
+  }
+
+  .tonari-panel {
+    border-radius: 26px;
+  }
+
+  .tonari-panel-body {
+    padding: 24px 18px;
+  }
+
+  .tonari-button {
+    min-height: 54px;
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}/* App shell */
+
+.tonari-app-shell-full {
+  display: flex;
+  min-height: calc(100vh - 60px);
+  flex-direction: column;
+}
+
+.tonari-app-panel {
+  position: relative;
+}
+
+.tonari-app-panel-full {
+  flex: 1;
+}
+
+.tonari-app-panel-compact {
+  max-width: 430px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+@media (max-width: 560px) {
+  .tonari-app-shell-full {
+    min-height: calc(100vh - 44px);
+  }
+}/* TopBar */
+
+.tonari-topbar {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  gap: 12px;
+}
+
+.tonari-topbar-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 48px;
+}
+
+.tonari-topbar-side-right {
+  justify-content: flex-end;
+}
+
+.tonari-topbar-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tonari-topbar .tonari-brand {
+  margin: 0;
+  font-size: 18px;
+}
