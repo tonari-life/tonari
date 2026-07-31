@@ -119,6 +119,34 @@ function ChevronIcon() {
   );
 }
 
+function HistoryIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
+      <path
+        d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v12H7.5A2.5 2.5 0 0 1 5 16.5z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7.5 7.5h7M7.5 11h7M7.5 14.5h4.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+      <path
+        d="M5 16.5A2.5 2.5 0 0 1 7.5 14H18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function PeopleIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
@@ -1152,6 +1180,38 @@ export default function HomePage() {
 
           {showNavigation && (
             <div className="home-navigation">
+              <button
+                type="button"
+                className="home-navigation-button"
+                onClick={() => router.push("/history")}
+              >
+                <span className="home-navigation-left">
+                  <span className="home-navigation-icon">
+                    <HistoryIcon />
+                  </span>
+
+                  <span>
+                    <span className="home-navigation-title">
+                      思い出を見る
+                    </span>
+
+                    <span className="home-navigation-copy">
+                      二人の回答とAIコメントを振り返ります
+                    </span>
+                  </span>
+                </span>
+
+                <span
+                  style={{
+                    color: "#a38b7a",
+                    display: "grid",
+                    placeItems: "center",
+                  }}
+                >
+                  <ChevronIcon />
+                </span>
+              </button>
+
               <button
                 type="button"
                 className="home-navigation-button"
