@@ -29,6 +29,39 @@ type Answer = {
   answer_text: string;
 };
 
+type HistoryAnswer = {
+  question_id: number;
+  user_id: string;
+  answer_text: string;
+};
+
+type HistoryQuestion = {
+  id: number;
+  question_text: string;
+  question_date: string;
+};
+
+type HistoryInsight = {
+  question_id: number;
+  insight_text: string;
+};
+
+type DashboardData = {
+  streak: number;
+  memoryCount: number;
+  latestInsight: string;
+  previousQuestion: string;
+  previousQuestionDate: string;
+};
+
+const EMPTY_DASHBOARD: DashboardData = {
+  streak: 0,
+  memoryCount: 0,
+  latestInsight: "",
+  previousQuestion: "",
+  previousQuestionDate: "",
+};
+
 type HomeStatus =
   | "loading"
   | "no_question"
@@ -166,6 +199,59 @@ function SettingsIcon() {
   );
 }
 
+function formatDashboardDate(value: string) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(`${value}T00:00:00+09:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("ja-JP", {
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+    timeZone: "Asia/Tokyo",
+  }).format(date);
+}
+
+function calculateStreak(dates: string[]) {
+  const uniqueDates = [...new Set(dates)].sort((a, b) =>
+    b.localeCompare(a)
+  );
+
+  if (uniqueDates.length === 0) {
+    return 0;
+  }
+
+  let streak = 1;
+
+  for (let index = 1; index < uniqueDates.length; index += 1) {
+    const previous = new Date(
+      `${uniqueDates[index - 1]}T00:00:00+09:00`
+    );
+    const current = new Date(
+      `${uniqueDates[index]}T00:00:00+09:00`
+    );
+
+    const diffDays = Math.round(
+      (previous.getTime() - current.getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+
+    if (diffDays !== 1) {
+      break;
+    }
+
+    streak += 1;
+  }
+
+  return streak;
+}
+
 export default function HomePage() {
   const router = useRouter();
 
@@ -176,6 +262,8 @@ export default function HomePage() {
   const [status, setStatus] = useState<HomeStatus>("loading");
   const [message, setMessage] = useState("");
   const [lastUpdated, setLastUpdated] = useState("");
+  const [dashboard, setDashboard] =
+    useState<DashboardData>(EMPTY_DASHBOARD);
 
   const loadHome = useCallback(
     async (showLoading: boolean) => {
@@ -216,6 +304,7 @@ export default function HomePage() {
           setCouple(null);
           setMyAnswered(false);
           setPartnerAnswered(false);
+          setDashboard(EMPTY_DASHBOARD);
           setStatus("no_question");
           setLastUpdated(getCurrentTimeJST());
           return;
@@ -246,6 +335,154 @@ export default function HomePage() {
             currentCouple.owner_id === userId
               ? currentCouple.partner_id
               : currentCouple.owner_id;
+        }
+
+        if (currentCouple) {
+          const historyUserIds = [
+            currentCouple.owner_id,
+            ...(currentCouple.partner_id
+              ? [currentCouple.partner_id]
+              : []),
+          ];
+
+          const { data: historyAnswerRows, error: historyAnswerError } =
+            await supabase
+              .from("answers")
+              .select("question_id, user_id, answer_text")
+              .in("user_id", historyUserIds);
+
+          if (historyAnswerError) {
+            console.warn(
+              "ホーム履歴データの取得エラー:",
+              historyAnswerError
+            );
+            setDashboard(EMPTY_DASHBOARD);
+          } else {
+            const historyAnswers =
+              (historyAnswerRows ?? []) as HistoryAnswer[];
+
+            const questionIds = [
+              ...new Set(
+                historyAnswers.map((item) => item.question_id)
+              ),
+            ];
+
+            if (questionIds.length === 0) {
+              setDashboard(EMPTY_DASHBOARD);
+            } else {
+              const [
+                {
+                  data: historyQuestionRows,
+                  error: historyQuestionError,
+                },
+                {
+                  data: historyInsightRows,
+                  error: historyInsightError,
+                },
+              ] = await Promise.all([
+                supabase
+                  .from("daily_questions")
+                  .select("id, question_text, question_date")
+                  .in("id", questionIds)
+                  .order("question_date", { ascending: false }),
+                supabase
+                  .from("daily_insights")
+                  .select("question_id, insight_text")
+                  .eq("couple_id", currentCouple.id)
+                  .in("question_id", questionIds),
+              ]);
+
+              if (historyQuestionError) {
+                console.warn(
+                  "ホーム質問履歴の取得エラー:",
+                  historyQuestionError
+                );
+                setDashboard(EMPTY_DASHBOARD);
+              } else {
+                if (historyInsightError) {
+                  console.warn(
+                    "ホームAIコメントの取得エラー:",
+                    historyInsightError
+                  );
+                }
+
+                const historyQuestions =
+                  (historyQuestionRows ?? []) as HistoryQuestion[];
+                const historyInsights =
+                  (historyInsightRows ?? []) as HistoryInsight[];
+
+                const answerUsersByQuestion = new Map<
+                  number,
+                  Set<string>
+                >();
+
+                historyAnswers.forEach((answer) => {
+                  if (!answer.answer_text?.trim()) {
+                    return;
+                  }
+
+                  const users =
+                    answerUsersByQuestion.get(answer.question_id) ??
+                    new Set<string>();
+
+                  users.add(answer.user_id);
+                  answerUsersByQuestion.set(
+                    answer.question_id,
+                    users
+                  );
+                });
+
+                const completedQuestions = historyQuestions.filter(
+                  (item) => {
+                    const answeredUsers =
+                      answerUsersByQuestion.get(item.id);
+
+                    return currentCouple.partner_id
+                      ? answeredUsers?.has(currentCouple.owner_id) &&
+                          answeredUsers?.has(
+                            currentCouple.partner_id
+                          )
+                      : answeredUsers?.has(userId);
+                  }
+                );
+
+                const insightMap = new Map(
+                  historyInsights.map((item) => [
+                    item.question_id,
+                    item.insight_text?.trim() ?? "",
+                  ])
+                );
+
+                const latestInsightQuestion =
+                  completedQuestions.find((item) =>
+                    Boolean(insightMap.get(item.id))
+                  );
+
+                const previousQuestion =
+                  completedQuestions.find(
+                    (item) => item.question_date !== today
+                  ) ?? completedQuestions[0];
+
+                setDashboard({
+                  streak: calculateStreak(
+                    completedQuestions.map(
+                      (item) => item.question_date
+                    )
+                  ),
+                  memoryCount: completedQuestions.length,
+                  latestInsight: latestInsightQuestion
+                    ? insightMap.get(latestInsightQuestion.id) ?? ""
+                    : "",
+                  previousQuestion:
+                    previousQuestion?.question_text ?? "",
+                  previousQuestionDate:
+                    previousQuestion?.question_date ?? "",
+                });
+              }
+            }
+          }
+        } else {
+          setDashboard(EMPTY_DASHBOARD);
         }
 
         const targetUserIds = [userId];
@@ -326,6 +563,15 @@ export default function HomePage() {
           event: "*",
           schema: "public",
           table: "couples",
+        },
+        () => loadHome(false)
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "daily_insights",
         },
         () => loadHome(false)
       )
@@ -483,6 +729,132 @@ export default function HomePage() {
           font-weight: 600;
           line-height: 1.48;
           letter-spacing: 0.01em;
+        }
+
+        .home-dashboard {
+          margin-top: 18px;
+          padding: 17px;
+          border: 1px solid #e5ddd4;
+          border-radius: 23px;
+          background:
+            linear-gradient(
+              145deg,
+              rgba(255, 250, 246, 0.98),
+              rgba(244, 248, 241, 0.98)
+            );
+          box-shadow: 0 12px 30px rgba(94, 73, 60, 0.07);
+        }
+
+        .home-dashboard-title {
+          margin: 0;
+          color: #9a7e6e;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.14em;
+        }
+
+        .home-dashboard-stats {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-top: 12px;
+        }
+
+        .home-dashboard-stat {
+          padding: 14px 13px;
+          border: 1px solid rgba(224, 211, 202, 0.9);
+          border-radius: 17px;
+          background: rgba(255, 255, 255, 0.72);
+          text-align: center;
+        }
+
+        .home-dashboard-number {
+          margin: 0;
+          color: #654b3c;
+          font-family: "Zen Old Mincho", serif;
+          font-size: 26px;
+          font-weight: 700;
+          line-height: 1;
+        }
+
+        .home-dashboard-number span {
+          margin-left: 3px;
+          font-family: inherit;
+          font-size: 12px;
+        }
+
+        .home-dashboard-label {
+          margin: 7px 0 0;
+          color: #8e796d;
+          font-size: 10px;
+          font-weight: 700;
+        }
+
+        .home-dashboard-message {
+          margin-top: 11px;
+          padding: 14px 15px;
+          border: 1px solid rgba(215, 226, 211, 0.95);
+          border-radius: 17px;
+          background: rgba(244, 248, 242, 0.9);
+        }
+
+        .home-dashboard-message-label {
+          margin: 0;
+          color: #75866f;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+        }
+
+        .home-dashboard-message-text {
+          display: -webkit-box;
+          margin: 8px 0 0;
+          overflow: hidden;
+          color: #5e554e;
+          font-size: 12px;
+          line-height: 1.75;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 3;
+        }
+
+        .home-dashboard-previous {
+          width: 100%;
+          margin-top: 10px;
+          padding: 13px 14px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          border: 1px solid rgba(232, 217, 208, 0.95);
+          border-radius: 17px;
+          background: rgba(255, 253, 251, 0.85);
+          color: inherit;
+          text-align: left;
+          cursor: pointer;
+        }
+
+        .home-dashboard-previous-copy {
+          min-width: 0;
+        }
+
+        .home-dashboard-previous-date {
+          margin: 0;
+          color: #aa8e7e;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 0.06em;
+        }
+
+        .home-dashboard-previous-question {
+          margin: 5px 0 0;
+          overflow: hidden;
+          color: #66554a;
+          font-family: "Zen Old Mincho", serif;
+          font-size: 13px;
+          font-weight: 600;
+          line-height: 1.55;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .home-question-card {
@@ -872,6 +1244,84 @@ export default function HomePage() {
               </h1>
             </div>
           </header>
+
+          {status !== "loading" &&
+            status !== "error" &&
+            status !== "no_question" && (
+              <section
+                className="home-dashboard"
+                aria-label="二人の記録"
+              >
+                <p className="home-dashboard-title">
+                  OUR DAYS
+                </p>
+
+                <div className="home-dashboard-stats">
+                  <div className="home-dashboard-stat">
+                    <p className="home-dashboard-number">
+                      {dashboard.streak}
+                      <span>日</span>
+                    </p>
+                    <p className="home-dashboard-label">
+                      連続記録
+                    </p>
+                  </div>
+
+                  <div className="home-dashboard-stat">
+                    <p className="home-dashboard-number">
+                      {dashboard.memoryCount}
+                      <span>件</span>
+                    </p>
+                    <p className="home-dashboard-label">
+                      二人の思い出
+                    </p>
+                  </div>
+                </div>
+
+                <div className="home-dashboard-message">
+                  <p className="home-dashboard-message-label">
+                    AIから二人へ
+                  </p>
+                  <p className="home-dashboard-message-text">
+                    {dashboard.latestInsight ||
+                      "二人の回答がそろうと、ここにAIからのメッセージが届きます。"}
+                  </p>
+                </div>
+
+                {dashboard.previousQuestion && (
+                  <button
+                    type="button"
+                    className="home-dashboard-previous"
+                    onClick={() => router.push("/history")}
+                  >
+                    <span className="home-dashboard-previous-copy">
+                      <p className="home-dashboard-previous-date">
+                        前回の質問
+                        {dashboard.previousQuestionDate
+                          ? `・${formatDashboardDate(
+                              dashboard.previousQuestionDate
+                            )}`
+                          : ""}
+                      </p>
+                      <p className="home-dashboard-previous-question">
+                        {dashboard.previousQuestion}
+                      </p>
+                    </span>
+
+                    <span
+                      style={{
+                        color: "#a38b7a",
+                        display: "grid",
+                        placeItems: "center",
+                        flex: "0 0 auto",
+                      }}
+                    >
+                      <ChevronIcon />
+                    </span>
+                  </button>
+                )}
+              </section>
+            )}
 
           {status === "loading" && (
             <div
