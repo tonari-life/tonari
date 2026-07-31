@@ -201,14 +201,38 @@ function InvitePageContent() {
         setLoading(true);
         setMessage("");
 
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
+        let {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
 
-        if (userError || !user) {
-          router.replace("/");
-          return;
+        if (sessionError) {
+          throw new Error(
+            `ログイン情報を確認できませんでした：${sessionError.message}`
+          );
+        }
+
+        if (!session?.user) {
+          const { data, error } =
+            await supabase.auth.signInAnonymously();
+
+          if (error || !data.user) {
+            throw new Error(
+              `参加の準備に失敗しました：${
+                error?.message ?? "ユーザーを作成できませんでした"
+              }`
+            );
+          }
+
+          session = data.session;
+        }
+
+        const user = session?.user;
+
+        if (!user) {
+          throw new Error(
+            "ログイン情報を取得できませんでした。"
+          );
         }
 
         const { data, error } = await supabase
