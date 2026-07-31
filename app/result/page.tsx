@@ -46,6 +46,12 @@ type ResultState =
   | "ready"
   | "error";
 
+type InsightState =
+  | "idle"
+  | "loading"
+  | "ready"
+  | "error";
+
 const STOP_WORDS = new Set([
   "です",
   "ます",
@@ -292,6 +298,15 @@ export default function ResultPage() {
   const [message, setMessage] =
     useState("");
 
+  const [insight, setInsight] =
+    useState("");
+
+  const [insightState, setInsightState] =
+    useState<InsightState>("idle");
+
+  const [insightError, setInsightError] =
+    useState("");
+
   const commonWords = useMemo(
     () =>
       findCommonWords(
@@ -301,9 +316,88 @@ export default function ResultPage() {
     [myAnswer, partnerAnswer]
   );
 
+  const loadInsight = useCallback(
+    async (
+      coupleId: string,
+      questionId: number,
+      accessToken: string
+    ) => {
+      try {
+        setInsightState("loading");
+        setInsightError("");
+
+        const response = await fetch(
+          "/api/insights",
+          {
+            method: "POST",
+            headers: {
+              Authorization:
+                `Bearer ${accessToken}`,
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              coupleId,
+              questionId,
+            }),
+          }
+        );
+
+        const data = (await response.json()) as {
+          ok?: boolean;
+          insight?: string;
+          error?: string;
+          pending?: boolean;
+        };
+
+        if (!response.ok || !data.ok) {
+          if (data.pending) {
+            setInsightState("idle");
+            return;
+          }
+
+          setInsightState("error");
+          setInsightError(
+            data.error ||
+              "となりAIのコメントを読み込めませんでした。"
+          );
+          return;
+        }
+
+        const nextInsight =
+          data.insight?.trim() ?? "";
+
+        if (!nextInsight) {
+          setInsightState("error");
+          setInsightError(
+            "となりAIのコメントが空でした。"
+          );
+          return;
+        }
+
+        setInsight(nextInsight);
+        setInsightState("ready");
+      } catch (error) {
+        console.error(
+          "となりAIの読み込みエラー:",
+          error
+        );
+
+        setInsightState("error");
+        setInsightError(
+          "となりAIのコメントを読み込めませんでした。"
+        );
+      }
+    },
+    []
+  );
+
   const loadResult = useCallback(async () => {
     try {
       setMessage("");
+      setInsight("");
+      setInsightState("idle");
+      setInsightError("");
 
       const params = new URLSearchParams(
         window.location.search
@@ -326,6 +420,19 @@ export default function ResultPage() {
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
+        router.replace("/");
+        return;
+      }
+
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (
+        sessionError ||
+        !session?.access_token
+      ) {
         router.replace("/");
         return;
       }
@@ -514,6 +621,12 @@ export default function ResultPage() {
         partnerAnswerText.trim()
       ) {
         setState("ready");
+
+        void loadInsight(
+          couple.id,
+          questionData.id,
+          session.access_token
+        );
       } else {
         setState("waiting");
       }
@@ -530,7 +643,7 @@ export default function ResultPage() {
           : "回答の読み込み中にエラーが発生しました。"
       );
     }
-  }, [router]);
+  }, [loadInsight, router]);
 
   useEffect(() => {
     setState("loading");
@@ -761,6 +874,71 @@ export default function ResultPage() {
                 </div>
               </section>
             )}
+
+            <section
+              className="result-insight-card"
+              aria-live="polite"
+            >
+              <div className="result-insight-heading">
+                <span
+                  className="result-insight-mark"
+                  aria-hidden="true"
+                >
+                  ✦
+                </span>
+
+                <div>
+                  <p className="result-insight-eyebrow">
+                    今日のとなりAI
+                  </p>
+
+                  <h2 className="result-insight-title">
+                    二人の答えから見えたこと
+                  </h2>
+                </div>
+              </div>
+
+              {insightState === "loading" && (
+                <div className="result-insight-loading">
+                  <span
+                    className="result-insight-spinner"
+                    aria-hidden="true"
+                  />
+
+                  <p>
+                    二人の答えを、やさしく読み解いています…
+                  </p>
+                </div>
+              )}
+
+              {insightState === "ready" && (
+                <p className="result-insight-text">
+                  {insight}
+                </p>
+              )}
+
+              {insightState === "error" && (
+                <div className="result-insight-error">
+                  <p>{insightError}</p>
+
+                  <button
+                    type="button"
+                    className="result-insight-retry"
+                    onClick={() =>
+                      void loadResult()
+                    }
+                  >
+                    もう一度読み込む
+                  </button>
+                </div>
+              )}
+
+              {insightState === "idle" && (
+                <p className="result-insight-text">
+                  二人の回答がそろうと、ここに今日のコメントが届きます。
+                </p>
+              )}
+            </section>
 
             <section className="result-conversation-card">
               <p className="result-conversation-eyebrow">
@@ -1149,6 +1327,117 @@ export default function ResultPage() {
           font-weight: 700;
         }
 
+        .result-insight-card {
+          margin-top: 20px;
+          padding: 23px 22px 24px;
+          border: 1px solid #d9e4d5;
+          border-radius: 25px;
+          background:
+            linear-gradient(
+              145deg,
+              #f7faf5 0%,
+              #eef4eb 100%
+            );
+          box-shadow:
+            var(--tonari-shadow-sm);
+        }
+
+        .result-insight-heading {
+          display: flex;
+          align-items: center;
+          gap: 13px;
+        }
+
+        .result-insight-mark {
+          display: flex;
+          width: 45px;
+          height: 45px;
+          flex: 0 0 45px;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: #dcebd7;
+          color: #587252;
+          font-size: 20px;
+          box-shadow: 0 8px 18px
+            rgba(88, 114, 82, 0.14);
+        }
+
+        .result-insight-eyebrow {
+          margin: 0;
+          color:
+            var(--tonari-sage-deep);
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+        }
+
+        .result-insight-title {
+          margin: 5px 0 0;
+          color: var(--tonari-text);
+          font-family:
+            "Zen Old Mincho", serif;
+          font-size: 18px;
+          font-weight: 600;
+          line-height: 1.55;
+        }
+
+        .result-insight-text {
+          margin: 18px 0 0;
+          color: var(--tonari-text);
+          font-size: 14px;
+          line-height: 2;
+          white-space: pre-wrap;
+          overflow-wrap: anywhere;
+        }
+
+        .result-insight-loading {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-top: 18px;
+          color:
+            var(--tonari-text-soft);
+          font-size: 13px;
+          line-height: 1.7;
+        }
+
+        .result-insight-loading p,
+        .result-insight-error p {
+          margin: 0;
+        }
+
+        .result-insight-spinner {
+          width: 20px;
+          height: 20px;
+          flex: 0 0 20px;
+          border: 3px solid #d6e2d1;
+          border-top-color:
+            var(--tonari-sage-deep);
+          border-radius: 50%;
+          animation: result-spin 850ms
+            linear infinite;
+        }
+
+        .result-insight-error {
+          margin-top: 17px;
+          color: #8f5f55;
+          font-size: 13px;
+          line-height: 1.7;
+        }
+
+        .result-insight-retry {
+          margin-top: 11px;
+          padding: 8px 12px;
+          border: 1px solid #d7c2b8;
+          border-radius: 999px;
+          background: #fffaf7;
+          color: var(--tonari-brown);
+          font: inherit;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
         .result-conversation-card {
           margin-top: 22px;
           padding: 25px 22px;
@@ -1288,6 +1577,7 @@ export default function ResultPage() {
           prefers-reduced-motion: reduce
         ) {
           .result-spinner,
+          .result-insight-spinner,
           .result-waiting-dot,
           .result-reveal-card,
           .result-answer-card,
