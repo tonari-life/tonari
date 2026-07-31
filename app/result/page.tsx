@@ -695,6 +695,34 @@ export default function ResultPage() {
 
         {state === "ready" && (
           <>
+            <section
+              className="result-reveal-card"
+              aria-live="polite"
+            >
+              <div
+                className="result-reveal-icon"
+                aria-hidden="true"
+              >
+                ✓
+              </div>
+
+              <p className="result-reveal-eyebrow">
+                ふたりの答えがそろいました
+              </p>
+
+              <h2 className="result-reveal-title">
+                今日も、少しだけ
+                <br />
+                お互いを知れました。
+              </h2>
+
+              <p className="result-reveal-copy">
+                {myName}さんと{partnerName}さんの答えを、
+                <br />
+                ゆっくり見てみましょう。
+              </p>
+            </section>
+
             <section className="result-answer-list">
               <AnswerCard
                 variant="mine"
@@ -712,7 +740,11 @@ export default function ResultPage() {
             {commonWords.length > 0 && (
               <section className="result-common-card">
                 <p className="result-common-label">
-                  二人に共通していた言葉
+                  ✦ 今日の共通点
+                </p>
+
+                <p className="result-common-copy">
+                  二人の答えに、同じ言葉がありました。
                 </p>
 
                 <div className="result-common-words">
@@ -731,16 +763,24 @@ export default function ResultPage() {
             )}
 
             <section className="result-conversation-card">
+              <p className="result-conversation-eyebrow">
+                今日の「となり」
+              </p>
+
               <p className="result-conversation-title">
-                答えが違うからこそ、
+                同じところも、
                 <br />
-                今日、少し話してみませんか。
+                違うところも、大切な二人らしさ。
               </p>
 
               <p className="result-conversation-copy">
-                同じ答えも、違う答えも、
+                答えをきっかけに、
                 <br />
-                二人を知るきっかけになります。
+                今日、少しだけ話してみませんか。
+              </p>
+
+              <p className="result-conversation-tomorrow">
+                また明日も、となりで。
               </p>
             </section>
 
@@ -903,6 +943,70 @@ export default function ResultPage() {
             ease-in-out infinite;
         }
 
+        .result-reveal-card {
+          margin-top: 30px;
+          padding: 25px 22px 26px;
+          border: 1px solid #ead6ca;
+          border-radius: 26px;
+          background:
+            linear-gradient(
+              145deg,
+              #fff8f3 0%,
+              #f5eee8 58%,
+              #eef4eb 100%
+            );
+          text-align: center;
+          box-shadow:
+            var(--tonari-shadow-sm);
+          animation:
+            result-reveal-in 520ms
+            ease both;
+        }
+
+        .result-reveal-icon {
+          display: flex;
+          width: 54px;
+          height: 54px;
+          margin: 0 auto 13px;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: #dcebd7;
+          color: #587252;
+          font-family: sans-serif;
+          font-size: 24px;
+          font-weight: 800;
+          box-shadow: 0 9px 20px
+            rgba(88, 114, 82, 0.15);
+        }
+
+        .result-reveal-eyebrow {
+          margin: 0;
+          color:
+            var(--tonari-sage-deep);
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+        }
+
+        .result-reveal-title {
+          margin: 10px 0 0;
+          color: var(--tonari-text);
+          font-family:
+            "Zen Old Mincho", serif;
+          font-size: 23px;
+          font-weight: 600;
+          line-height: 1.7;
+        }
+
+        .result-reveal-copy {
+          margin: 10px 0 0;
+          color:
+            var(--tonari-text-soft);
+          font-size: 13px;
+          line-height: 1.8;
+        }
+
         .result-answer-list {
           display: grid;
           gap: 16px;
@@ -1018,6 +1122,14 @@ export default function ResultPage() {
           letter-spacing: 0.08em;
         }
 
+        .result-common-copy {
+          margin: 8px 0 0;
+          color:
+            var(--tonari-text-soft);
+          font-size: 13px;
+          line-height: 1.7;
+        }
+
         .result-common-words {
           display: flex;
           flex-wrap: wrap;
@@ -1052,6 +1164,14 @@ export default function ResultPage() {
             ease 320ms both;
         }
 
+        .result-conversation-eyebrow {
+          margin: 0 0 10px;
+          color: #d9c7bc;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+        }
+
         .result-conversation-title {
           margin: 0;
           font-family: "Zen Old Mincho",
@@ -1068,6 +1188,16 @@ export default function ResultPage() {
           line-height: 1.8;
         }
 
+        .result-conversation-tomorrow {
+          margin: 17px 0 0;
+          color: #ffffff;
+          font-family:
+            "Zen Old Mincho", serif;
+          font-size: 15px;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+        }
+
         .result-home-link {
           margin-top: 18px;
         }
@@ -1075,6 +1205,22 @@ export default function ResultPage() {
         @keyframes result-spin {
           to {
             transform: rotate(360deg);
+          }
+        }
+
+        @keyframes result-reveal-in {
+          from {
+            opacity: 0;
+            transform:
+              translateY(12px)
+              scale(0.985);
+          }
+
+          to {
+            opacity: 1;
+            transform:
+              translateY(0)
+              scale(1);
           }
         }
 
@@ -1143,6 +1289,7 @@ export default function ResultPage() {
         ) {
           .result-spinner,
           .result-waiting-dot,
+          .result-reveal-card,
           .result-answer-card,
           .result-common-card,
           .result-conversation-card {
