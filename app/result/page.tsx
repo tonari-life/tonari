@@ -262,7 +262,7 @@ function AnswerCard({
           </p>
 
           <p className="result-answer-subtitle">
-            今日の気持ち
+            今日のこたえ
           </p>
         </div>
       </div>
@@ -707,26 +707,52 @@ export default function ResultPage() {
           }
         />
 
-        <header className="result-heading">
-          <p className="tonari-eyebrow">
-            今日の答え
-          </p>
+        <header className="result-heading result-brand-hero">
+          <div
+            className="result-brand-leaf result-brand-leaf-left"
+            aria-hidden="true"
+          >
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
 
-          {question ? (
-            <h1 className="result-question">
-              {question.question_text}
-            </h1>
-          ) : state === "loading" ? (
-            <h1 className="result-question result-question-placeholder">
-              二人の答え
-            </h1>
-          ) : null}
+          <div
+            className="result-brand-leaf result-brand-leaf-right"
+            aria-hidden="true"
+          >
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
 
-          <p className="tonari-copy result-heading-copy">
-            同じところも、違うところも、
-            <br />
-            二人を知るきっかけになります。
-          </p>
+          <div className="result-brand-hero-inner">
+            <p className="result-brand-kicker">
+              TODAY&apos;S TONARI
+            </p>
+
+            <p className="tonari-eyebrow result-brand-eyebrow">
+              今日の答え
+            </p>
+
+            {question ? (
+              <h1 className="result-question">
+                {question.question_text}
+              </h1>
+            ) : state === "loading" ? (
+              <h1 className="result-question result-question-placeholder">
+                二人の答え
+              </h1>
+            ) : null}
+
+            <p className="tonari-copy result-heading-copy">
+              同じところも、違うところも、
+              <br />
+              二人を知るきっかけになります。
+            </p>
+          </div>
         </header>
 
         {state === "loading" && (
@@ -809,14 +835,16 @@ export default function ResultPage() {
         {state === "ready" && (
           <>
             <section
-              className="result-reveal-card"
+              className="result-reveal-card result-reveal-brand"
               aria-live="polite"
             >
+              <div className="result-reveal-glow" aria-hidden="true" />
+
               <div
                 className="result-reveal-icon"
                 aria-hidden="true"
               >
-                ✓
+                <span>✓</span>
               </div>
 
               <p className="result-reveal-eyebrow">
@@ -824,7 +852,7 @@ export default function ResultPage() {
               </p>
 
               <h2 className="result-reveal-title">
-                今日も、少しだけ
+                今日も少しだけ、
                 <br />
                 お互いを知れました。
               </h2>
@@ -834,6 +862,12 @@ export default function ResultPage() {
                 <br />
                 ゆっくり見てみましょう。
               </p>
+
+              <div className="result-reveal-divider" aria-hidden="true">
+                <span />
+                <i />
+                <span />
+              </div>
             </section>
 
             <section className="result-answer-list">
@@ -893,7 +927,7 @@ export default function ResultPage() {
                   </p>
 
                   <h2 className="result-insight-title">
-                    二人の答えから見えたこと
+                    ふたりの答えから見えたこと
                   </h2>
                 </div>
               </div>
@@ -941,6 +975,15 @@ export default function ResultPage() {
             </section>
 
             <section className="result-conversation-card">
+              <div
+                className="result-conversation-decoration"
+                aria-hidden="true"
+              >
+                <span />
+                <span />
+                <span />
+              </div>
+
               <p className="result-conversation-eyebrow">
                 今日の「となり」
               </p>
@@ -1491,6 +1534,701 @@ export default function ResultPage() {
           margin-top: 18px;
         }
 
+
+        /* -------------------------------------------------
+           Brand redesign
+        -------------------------------------------------- */
+
+        .result-page-shell {
+          position: relative;
+        }
+
+        .result-page-shell::before {
+          content: "";
+          position: fixed;
+          inset: 0;
+          z-index: -1;
+          background:
+            radial-gradient(
+              circle at 15% 8%,
+              rgba(242, 203, 190, 0.28),
+              transparent 34%
+            ),
+            radial-gradient(
+              circle at 88% 18%,
+              rgba(188, 208, 179, 0.25),
+              transparent 35%
+            ),
+            linear-gradient(
+              180deg,
+              #f8f0e9 0%,
+              #f4ece5 58%,
+              #f7f2ed 100%
+            );
+        }
+
+        .result-panel {
+          position: relative;
+          overflow: hidden;
+          border: 1px solid rgba(218, 194, 180, 0.68);
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255, 252, 249, 0.96),
+              rgba(251, 247, 243, 0.96)
+            );
+          box-shadow:
+            0 28px 80px rgba(98, 71, 55, 0.11);
+        }
+
+        .result-panel::before {
+          content: "";
+          position: absolute;
+          top: -130px;
+          right: -120px;
+          width: 330px;
+          height: 330px;
+          border-radius: 50%;
+          background:
+            radial-gradient(
+              circle,
+              rgba(222, 235, 216, 0.7),
+              rgba(222, 235, 216, 0)
+            );
+          pointer-events: none;
+        }
+
+        .result-content {
+          position: relative;
+          z-index: 1;
+        }
+
+        .result-home-button {
+          border: 1px solid rgba(217, 192, 178, 0.72);
+          background: rgba(255, 250, 247, 0.88);
+          color: #785848;
+          box-shadow:
+            0 8px 20px rgba(105, 76, 59, 0.09);
+          backdrop-filter: blur(8px);
+        }
+
+        .result-brand-hero {
+          position: relative;
+          isolation: isolate;
+          overflow: hidden;
+          margin-top: 24px;
+          padding: 34px 28px 32px;
+          border: 1px solid rgba(226, 199, 184, 0.82);
+          border-radius: 30px;
+          background:
+            radial-gradient(
+              circle at 50% 0%,
+              rgba(255, 255, 255, 0.92),
+              transparent 44%
+            ),
+            linear-gradient(
+              145deg,
+              #fff8f4 0%,
+              #f8eee8 50%,
+              #eef4eb 100%
+            );
+          box-shadow:
+            0 20px 48px rgba(100, 73, 57, 0.11);
+        }
+
+        .result-brand-hero::before,
+        .result-brand-hero::after {
+          content: "";
+          position: absolute;
+          border-radius: 50%;
+          pointer-events: none;
+        }
+
+        .result-brand-hero::before {
+          top: -70px;
+          left: 50%;
+          width: 220px;
+          height: 220px;
+          transform: translateX(-50%);
+          background:
+            radial-gradient(
+              circle,
+              rgba(255, 255, 255, 0.8),
+              rgba(255, 255, 255, 0)
+            );
+        }
+
+        .result-brand-hero::after {
+          right: -54px;
+          bottom: -82px;
+          width: 190px;
+          height: 190px;
+          background:
+            radial-gradient(
+              circle,
+              rgba(199, 216, 191, 0.5),
+              rgba(199, 216, 191, 0)
+            );
+        }
+
+        .result-brand-hero-inner {
+          position: relative;
+          z-index: 2;
+        }
+
+        .result-brand-kicker {
+          margin: 0;
+          color: #b88774;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.24em;
+        }
+
+        .result-brand-eyebrow {
+          margin-top: 10px;
+          color: #8da083;
+        }
+
+        .result-question {
+          max-width: 590px;
+          margin-top: 16px;
+          color: #5a3f31;
+          font-size: clamp(28px, 6.2vw, 38px);
+          line-height: 1.55;
+          text-wrap: balance;
+        }
+
+        .result-heading-copy {
+          margin-top: 16px;
+          color: #8b7163;
+          font-size: 14px;
+          line-height: 1.9;
+        }
+
+        .result-brand-leaf {
+          position: absolute;
+          z-index: 1;
+          width: 90px;
+          height: 130px;
+          opacity: 0.7;
+          pointer-events: none;
+        }
+
+        .result-brand-leaf::before {
+          content: "";
+          position: absolute;
+          left: 44px;
+          top: 8px;
+          width: 2px;
+          height: 112px;
+          border-radius: 999px;
+          background: #9bae90;
+          transform: rotate(12deg);
+          transform-origin: bottom;
+        }
+
+        .result-brand-leaf span {
+          position: absolute;
+          width: 30px;
+          height: 15px;
+          border-radius: 100% 0 100% 0;
+          background:
+            linear-gradient(
+              135deg,
+              #cbd9c4,
+              #9db28f
+            );
+        }
+
+        .result-brand-leaf span:nth-child(1) {
+          left: 17px;
+          top: 21px;
+          transform: rotate(-34deg);
+        }
+
+        .result-brand-leaf span:nth-child(2) {
+          right: 6px;
+          top: 47px;
+          transform: rotate(34deg) scaleX(-1);
+        }
+
+        .result-brand-leaf span:nth-child(3) {
+          left: 12px;
+          top: 74px;
+          transform: rotate(-31deg);
+        }
+
+        .result-brand-leaf span:nth-child(4) {
+          right: 0;
+          top: 96px;
+          transform: rotate(30deg) scaleX(-1);
+        }
+
+        .result-brand-leaf-left {
+          left: -7px;
+          bottom: -24px;
+          transform: rotate(-20deg);
+        }
+
+        .result-brand-leaf-right {
+          top: -17px;
+          right: -8px;
+          transform: rotate(157deg) scale(0.9);
+          opacity: 0.58;
+        }
+
+        .result-loading {
+          min-height: 300px;
+          margin-top: 24px;
+          border: 1px solid rgba(219, 200, 188, 0.62);
+          border-radius: 26px;
+          background: rgba(255, 251, 248, 0.72);
+        }
+
+        .result-waiting-card {
+          position: relative;
+          overflow: hidden;
+          border: 1px solid rgba(218, 200, 188, 0.82);
+          border-radius: 28px;
+          background:
+            linear-gradient(
+              145deg,
+              #fffaf7,
+              #f4eee9 58%,
+              #edf4ea
+            );
+          box-shadow:
+            0 18px 42px rgba(93, 68, 54, 0.1);
+        }
+
+        .result-waiting-card::after {
+          content: "";
+          position: absolute;
+          right: -40px;
+          bottom: -54px;
+          width: 150px;
+          height: 150px;
+          border-radius: 50%;
+          background:
+            radial-gradient(
+              circle,
+              rgba(197, 215, 188, 0.48),
+              rgba(197, 215, 188, 0)
+            );
+        }
+
+        .result-reveal-card {
+          position: relative;
+          isolation: isolate;
+          overflow: hidden;
+          margin-top: 28px;
+          padding: 32px 24px 27px;
+          border: 1px solid rgba(229, 200, 184, 0.88);
+          border-radius: 30px;
+          background:
+            radial-gradient(
+              circle at 50% -10%,
+              rgba(255, 255, 255, 0.98),
+              transparent 43%
+            ),
+            linear-gradient(
+              145deg,
+              #fff7f2 0%,
+              #f7ece5 52%,
+              #eef4eb 100%
+            );
+          box-shadow:
+            0 22px 54px rgba(99, 72, 56, 0.12);
+        }
+
+        .result-reveal-glow {
+          position: absolute;
+          inset: -60px auto auto 50%;
+          z-index: -1;
+          width: 260px;
+          height: 180px;
+          transform: translateX(-50%);
+          border-radius: 50%;
+          background:
+            radial-gradient(
+              circle,
+              rgba(255, 255, 255, 0.9),
+              rgba(255, 255, 255, 0)
+            );
+        }
+
+        .result-reveal-icon {
+          width: 58px;
+          height: 58px;
+          border: 1px solid rgba(151, 176, 140, 0.46);
+          background:
+            linear-gradient(
+              145deg,
+              #e4efdf,
+              #d2e3cc
+            );
+          color: #5f7957;
+          box-shadow:
+            0 12px 26px rgba(86, 113, 79, 0.16);
+        }
+
+        .result-reveal-icon span {
+          transform: translateY(-1px);
+        }
+
+        .result-reveal-eyebrow {
+          color: #829878;
+          font-size: 11px;
+          letter-spacing: 0.14em;
+        }
+
+        .result-reveal-title {
+          margin-top: 11px;
+          color: #563c2f;
+          font-size: clamp(23px, 5.4vw, 28px);
+          line-height: 1.72;
+        }
+
+        .result-reveal-copy {
+          color: #8a7062;
+          font-size: 13px;
+          line-height: 1.9;
+        }
+
+        .result-reveal-divider {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin-top: 18px;
+        }
+
+        .result-reveal-divider span {
+          width: 38px;
+          height: 1px;
+          background: rgba(182, 149, 131, 0.38);
+        }
+
+        .result-reveal-divider i {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: #b89b8b;
+        }
+
+        .result-answer-list {
+          gap: 18px;
+          margin-top: 28px;
+        }
+
+        .result-answer-card {
+          position: relative;
+          overflow: hidden;
+          padding: 24px;
+          border-radius: 27px;
+          box-shadow:
+            0 16px 38px rgba(91, 67, 53, 0.1);
+        }
+
+        .result-answer-card::after {
+          content: "";
+          position: absolute;
+          width: 128px;
+          height: 128px;
+          border-radius: 50%;
+          pointer-events: none;
+        }
+
+        .result-answer-card-mine {
+          border-color: rgba(231, 199, 181, 0.86);
+          background:
+            linear-gradient(
+              145deg,
+              #fff9f5,
+              #f9eee7
+            );
+        }
+
+        .result-answer-card-mine::after {
+          top: -56px;
+          right: -46px;
+          background:
+            radial-gradient(
+              circle,
+              rgba(230, 190, 171, 0.26),
+              rgba(230, 190, 171, 0)
+            );
+        }
+
+        .result-answer-card-partner {
+          border-color: rgba(198, 216, 191, 0.94);
+          background:
+            linear-gradient(
+              145deg,
+              #f8fbf6,
+              #edf4ea
+            );
+        }
+
+        .result-answer-card-partner::after {
+          right: -44px;
+          bottom: -56px;
+          background:
+            radial-gradient(
+              circle,
+              rgba(175, 200, 164, 0.3),
+              rgba(175, 200, 164, 0)
+            );
+        }
+
+        .result-avatar {
+          width: 52px;
+          height: 52px;
+          border: 1px solid rgba(255, 255, 255, 0.64);
+        }
+
+        .result-avatar-mine {
+          background:
+            linear-gradient(
+              145deg,
+              #e5bca8,
+              #d9a58e
+            );
+        }
+
+        .result-avatar-partner {
+          background:
+            linear-gradient(
+              145deg,
+              #c7d8c0,
+              #aebeaa
+            );
+        }
+
+        .result-answer-label {
+          color: #805c4b;
+          font-size: 14px;
+        }
+
+        .result-answer-subtitle {
+          color: #9a8275;
+          font-size: 12px;
+          letter-spacing: 0.04em;
+        }
+
+        .result-answer-text {
+          position: relative;
+          z-index: 1;
+          margin-top: 20px;
+          padding: 18px 18px 19px;
+          border: 1px solid rgba(255, 255, 255, 0.8);
+          border-radius: 19px;
+          background: rgba(255, 255, 255, 0.62);
+          color: #563f34;
+          font-size: 17px;
+          line-height: 2;
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .result-common-card {
+          margin-top: 21px;
+          padding: 23px;
+          border-color: rgba(226, 195, 178, 0.82);
+          border-radius: 25px;
+          background:
+            linear-gradient(
+              145deg,
+              #fff9f5,
+              #f6ece6
+            );
+          box-shadow:
+            0 13px 32px rgba(92, 67, 53, 0.08);
+        }
+
+        .result-common-label {
+          color: #9e7460;
+        }
+
+        .result-common-word {
+          border-color: rgba(221, 187, 169, 0.84);
+          background: rgba(255, 255, 255, 0.8);
+          color: #725042;
+          box-shadow:
+            0 6px 15px rgba(92, 66, 52, 0.06);
+        }
+
+        .result-insight-card {
+          position: relative;
+          overflow: hidden;
+          margin-top: 21px;
+          padding: 25px 24px 26px;
+          border-color: rgba(194, 214, 185, 0.96);
+          border-radius: 28px;
+          background:
+            radial-gradient(
+              circle at 100% 0%,
+              rgba(255, 255, 255, 0.86),
+              transparent 37%
+            ),
+            linear-gradient(
+              145deg,
+              #f8fbf6,
+              #eaf3e7
+            );
+          box-shadow:
+            0 17px 40px rgba(75, 101, 69, 0.1);
+        }
+
+        .result-insight-card::after {
+          content: "";
+          position: absolute;
+          right: -45px;
+          bottom: -58px;
+          width: 150px;
+          height: 150px;
+          border-radius: 50%;
+          background:
+            radial-gradient(
+              circle,
+              rgba(162, 190, 151, 0.28),
+              rgba(162, 190, 151, 0)
+            );
+          pointer-events: none;
+        }
+
+        .result-insight-heading,
+        .result-insight-text,
+        .result-insight-loading,
+        .result-insight-error {
+          position: relative;
+          z-index: 1;
+        }
+
+        .result-insight-mark {
+          width: 49px;
+          height: 49px;
+          flex-basis: 49px;
+          border: 1px solid rgba(152, 181, 141, 0.44);
+          background:
+            linear-gradient(
+              145deg,
+              #e5efdf,
+              #d2e4cb
+            );
+          color: #607957;
+        }
+
+        .result-insight-eyebrow {
+          color: #809775;
+        }
+
+        .result-insight-title {
+          color: #4f4037;
+          font-size: 19px;
+        }
+
+        .result-insight-text {
+          padding: 17px 18px;
+          border: 1px solid rgba(255, 255, 255, 0.78);
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.58);
+          color: #4e443d;
+          font-size: 14px;
+          line-height: 2.05;
+        }
+
+        .result-conversation-card {
+          position: relative;
+          isolation: isolate;
+          overflow: hidden;
+          margin-top: 23px;
+          padding: 31px 24px 29px;
+          border: 1px solid rgba(126, 87, 66, 0.3);
+          border-radius: 28px;
+          background:
+            radial-gradient(
+              circle at 50% -12%,
+              rgba(255, 255, 255, 0.1),
+              transparent 36%
+            ),
+            linear-gradient(
+              145deg,
+              #76513f,
+              #583b2e
+            );
+          box-shadow:
+            0 20px 46px rgba(73, 48, 37, 0.22);
+        }
+
+        .result-conversation-card::before,
+        .result-conversation-card::after {
+          content: "";
+          position: absolute;
+          z-index: -1;
+          border-radius: 50%;
+        }
+
+        .result-conversation-card::before {
+          top: -95px;
+          right: -78px;
+          width: 210px;
+          height: 210px;
+          background: rgba(230, 193, 172, 0.12);
+        }
+
+        .result-conversation-card::after {
+          bottom: -100px;
+          left: -70px;
+          width: 210px;
+          height: 210px;
+          background: rgba(171, 197, 160, 0.11);
+        }
+
+        .result-conversation-decoration {
+          display: flex;
+          justify-content: center;
+          gap: 7px;
+          margin-bottom: 12px;
+        }
+
+        .result-conversation-decoration span {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: #dfc6b7;
+          opacity: 0.88;
+        }
+
+        .result-conversation-decoration span:nth-child(2) {
+          width: 7px;
+          height: 7px;
+          transform: translateY(-1px);
+          background: #cbd8c5;
+        }
+
+        .result-conversation-eyebrow {
+          color: #dfc9bc;
+        }
+
+        .result-conversation-title {
+          font-size: 22px;
+          line-height: 1.86;
+        }
+
+        .result-conversation-copy {
+          color: #eadfd8;
+        }
+
+        .result-home-link {
+          margin-top: 19px;
+          border: 1px solid rgba(217, 193, 179, 0.85);
+          background: #fff8f4;
+          color: #6f4b3a;
+          box-shadow:
+            0 10px 24px rgba(89, 64, 50, 0.09);
+        }
+
         @keyframes result-spin {
           to {
             transform: rotate(360deg);
@@ -1557,11 +2295,31 @@ export default function ResultPage() {
           }
 
           .result-heading {
-            margin-top: 26px;
+            margin-top: 20px;
+          }
+
+          .result-brand-hero {
+            padding: 29px 20px 27px;
+            border-radius: 26px;
+          }
+
+          .result-brand-leaf {
+            transform: scale(0.82);
+          }
+
+          .result-brand-leaf-left {
+            left: -20px;
+            bottom: -35px;
+          }
+
+          .result-brand-leaf-right {
+            top: -32px;
+            right: -22px;
+            transform: rotate(157deg) scale(0.74);
           }
 
           .result-question {
-            font-size: 30px;
+            font-size: 28px;
           }
 
           .result-answer-card {
