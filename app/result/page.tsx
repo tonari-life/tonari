@@ -35,6 +35,11 @@ type Answer = {
   answer_text: string;
 };
 
+type Profile = {
+  id: string;
+  display_name: string | null;
+};
+
 type ResultState =
   | "loading"
   | "waiting"
@@ -275,6 +280,12 @@ export default function ResultPage() {
   const [partnerAnswer, setPartnerAnswer] =
     useState("");
 
+  const [myName, setMyName] =
+    useState("あなた");
+
+  const [partnerName, setPartnerName] =
+    useState("パートナー");
+
   const [state, setState] =
     useState<ResultState>("loading");
 
@@ -395,9 +406,57 @@ export default function ResultPage() {
       if (!couple.partner_id) {
         setMyAnswer("");
         setPartnerAnswer("");
+        setMyName("あなた");
+        setPartnerName("パートナー");
         setState("waiting");
         return;
       }
+
+      const otherUserId = isOwner
+        ? couple.partner_id
+        : couple.owner_id;
+
+      const {
+        data: profilesData,
+        error: profilesError,
+      } = await supabase
+        .from("profiles")
+        .select("id, display_name")
+        .in("id", [
+          user.id,
+          otherUserId,
+        ]);
+
+      if (profilesError) {
+        setState("error");
+        setMessage(
+          `名前を取得できませんでした：${profilesError.message}`
+        );
+        return;
+      }
+
+      const profiles =
+        (profilesData ?? []) as Profile[];
+
+      const currentUserProfile =
+        profiles.find(
+          (item) => item.id === user.id
+        );
+
+      const partnerProfile =
+        profiles.find(
+          (item) => item.id === otherUserId
+        );
+
+      setMyName(
+        currentUserProfile?.display_name?.trim() ||
+          "あなた"
+      );
+
+      setPartnerName(
+        partnerProfile?.display_name?.trim() ||
+          "パートナー"
+      );
 
       const {
         data: answersData,
@@ -430,10 +489,6 @@ export default function ResultPage() {
           (item) =>
             item.user_id === user.id
         );
-
-      const otherUserId = isOwner
-        ? couple.partner_id
-        : couple.owner_id;
 
       const otherUserAnswer =
         answers.find(
@@ -643,13 +698,13 @@ export default function ResultPage() {
             <section className="result-answer-list">
               <AnswerCard
                 variant="mine"
-                label="あなた"
+                label={myName}
                 answer={myAnswer}
               />
 
               <AnswerCard
                 variant="partner"
-                label="パートナー"
+                label={partnerName}
                 answer={partnerAnswer}
               />
             </section>
