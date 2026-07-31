@@ -528,35 +528,100 @@ export default function HomePage() {
           left: -30px;
         }
 
-        .home-question-birds {
+        .home-question-visual-center {
           position: relative;
-          z-index: 1;
-          display: grid;
-          place-items: center;
+          z-index: 2;
+          text-align: center;
         }
 
-        .home-question-birds-image {
-          width: 138px;
-          height: 138px;
-          border-radius: 38px;
-          box-shadow:
-            0 16px 34px
-            rgba(106, 78, 61, 0.13);
+        .home-question-visual-label {
+          margin: 0;
+          color: #d27f73;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.12em;
         }
 
         .home-question-visual-copy {
-          position: absolute;
-          right: 16px;
-          bottom: 13px;
-          z-index: 1;
-          margin: 0;
-          color: #8a6655;
+          margin: 12px 0 0;
+          color: #6f4a36;
           font-family:
             "Zen Old Mincho", serif;
-          font-size: 11px;
+          font-size: 19px;
           font-weight: 600;
-          line-height: 1.7;
-          text-align: right;
+          line-height: 1.8;
+          text-align: center;
+        }
+
+        .home-question-leaf {
+          position: absolute;
+          z-index: 1;
+          width: 92px;
+          height: 140px;
+        }
+
+        .home-question-leaf::before {
+          content: "";
+          position: absolute;
+          left: 44px;
+          top: 6px;
+          width: 2px;
+          height: 124px;
+          border-radius: 999px;
+          background: #9ab18f;
+          transform: rotate(12deg);
+          transform-origin: bottom;
+          opacity: 0.8;
+        }
+
+        .home-question-leaf span {
+          position: absolute;
+          width: 31px;
+          height: 16px;
+          border-radius: 100% 0 100% 0;
+          background: linear-gradient(
+            135deg,
+            #c8d8bf,
+            #9fb691
+          );
+          opacity: 0.86;
+        }
+
+        .home-question-leaf span:nth-child(1) {
+          left: 16px;
+          top: 20px;
+          transform: rotate(-34deg);
+        }
+
+        .home-question-leaf span:nth-child(2) {
+          right: 8px;
+          top: 48px;
+          transform: rotate(34deg) scaleX(-1);
+        }
+
+        .home-question-leaf span:nth-child(3) {
+          left: 12px;
+          top: 76px;
+          transform: rotate(-30deg);
+        }
+
+        .home-question-leaf span:nth-child(4) {
+          right: 2px;
+          top: 100px;
+          transform: rotate(30deg) scaleX(-1);
+        }
+
+        .home-question-leaf-left {
+          left: -4px;
+          bottom: -18px;
+          transform: rotate(-18deg);
+        }
+
+        .home-question-leaf-right {
+          right: -8px;
+          top: -10px;
+          transform: rotate(155deg) scale(0.92);
+          opacity: 0.78;
         }
 
         .home-status-grid {
@@ -873,21 +938,37 @@ export default function HomePage() {
                   <div className="home-question-orbit home-question-orbit-a" />
                   <div className="home-question-orbit home-question-orbit-b" />
 
-                  <div className="home-question-birds">
-                    <Image
-                      src="/icon-512.png"
-                      alt=""
-                      width={148}
-                      height={148}
-                      className="home-question-birds-image"
-                    />
+                  <div
+                    className="home-question-leaf home-question-leaf-left"
+                    aria-hidden="true"
+                  >
+                    <span />
+                    <span />
+                    <span />
+                    <span />
                   </div>
 
-                  <p className="home-question-visual-copy">
-                    今日のひとことが、
-                    <br />
-                    明日のふたりをもっと近くに。
-                  </p>
+                  <div
+                    className="home-question-leaf home-question-leaf-right"
+                    aria-hidden="true"
+                  >
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+
+                  <div className="home-question-visual-center">
+                    <p className="home-question-visual-label">
+                      今日のひとこと
+                    </p>
+
+                    <p className="home-question-visual-copy">
+                      今日のひとことが、
+                      <br />
+                      明日のふたりをもっと近くに。
+                    </p>
+                  </div>
                 </div>
 
                 <div
