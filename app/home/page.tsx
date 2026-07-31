@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { getCurrentTimeJST, getTodayJST } from "../../lib/date";
@@ -344,6 +345,21 @@ export default function HomePage() {
   return (
     <main className="tonari-page">
       <style>{`
+        .tonari-page {
+          background:
+            radial-gradient(
+              circle at 15% 0%,
+              rgba(247, 183, 176, 0.18),
+              transparent 30%
+            ),
+            radial-gradient(
+              circle at 90% 15%,
+              rgba(169, 197, 161, 0.18),
+              transparent 28%
+            ),
+            #fbf6f1;
+        }
+
         .home-wrap {
           width: 100%;
           max-width: 430px;
@@ -359,8 +375,80 @@ export default function HomePage() {
           box-shadow: 0 28px 72px rgba(94, 73, 60, 0.13);
         }
 
+        .home-brand-hero {
+          position: relative;
+          overflow: hidden;
+          padding: 22px 18px 24px;
+          border: 1px solid #efd9cf;
+          border-radius: 28px;
+          background:
+            radial-gradient(
+              circle at 92% 8%,
+              rgba(247, 183, 176, 0.28),
+              transparent 28%
+            ),
+            linear-gradient(
+              145deg,
+              #fff9f4 0%,
+              #fff4ec 50%,
+              #f3f7ef 100%
+            );
+          box-shadow: 0 16px 36px
+            rgba(102, 74, 58, 0.08);
+        }
+
+        .home-brand-logo {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
+
+        .home-brand-image {
+          width: 94px;
+          height: 94px;
+          border-radius: 27px;
+          box-shadow:
+            0 12px 28px
+            rgba(112, 82, 66, 0.14);
+        }
+
+        .home-brand-name {
+          margin: 0;
+          color: #6f452c;
+          font-family:
+            "Zen Old Mincho", serif;
+          font-size: 40px;
+          font-weight: 600;
+          line-height: 1;
+          letter-spacing: 0.08em;
+        }
+
+        .home-brand-tagline {
+          margin: 10px 0 0;
+          color: #876959;
+          font-size: 12px;
+          font-weight: 700;
+          line-height: 1.75;
+          letter-spacing: 0.03em;
+        }
+
+        .home-brand-message {
+          margin-top: 22px;
+          padding-top: 20px;
+          border-top: 1px solid
+            rgba(194, 147, 126, 0.28);
+        }
+
+        .home-brand-message-label {
+          margin: 0;
+          color: #d38176;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.16em;
+        }
+
         .home-heading {
-          margin: 18px 0 0;
+          margin: 10px 0 0;
           color: #463a33;
           font-family: "Zen Old Mincho", serif;
           font-size: 29px;
@@ -376,7 +464,12 @@ export default function HomePage() {
           padding: 0;
           border: 1px solid #eadfd7;
           border-radius: 24px;
-          background: #fffaf6;
+          background:
+            linear-gradient(
+              180deg,
+              #fffaf6 0%,
+              #fffdfb 100%
+            );
           box-shadow: 0 14px 34px rgba(94, 73, 60, 0.08);
           text-align: left;
           transition:
@@ -391,6 +484,79 @@ export default function HomePage() {
         .home-question-card:not(:disabled):hover {
           transform: translateY(-2px);
           box-shadow: 0 18px 40px rgba(94, 73, 60, 0.12);
+        }
+
+        .home-question-visual {
+          position: relative;
+          min-height: 208px;
+          display: grid;
+          place-items: center;
+          overflow: hidden;
+          padding: 18px;
+          background:
+            radial-gradient(
+              circle at 50% 38%,
+              rgba(255, 255, 255, 0.95),
+              transparent 36%
+            ),
+            linear-gradient(
+              145deg,
+              #fff6ef 0%,
+              #fde7de 52%,
+              #eef4ea 100%
+            );
+        }
+
+        .home-question-orbit {
+          position: absolute;
+          border-radius: 50%;
+          border: 1px solid
+            rgba(255, 255, 255, 0.72);
+        }
+
+        .home-question-orbit-a {
+          width: 220px;
+          height: 220px;
+          top: -75px;
+          right: -55px;
+        }
+
+        .home-question-orbit-b {
+          width: 150px;
+          height: 150px;
+          bottom: -55px;
+          left: -30px;
+        }
+
+        .home-question-birds {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          place-items: center;
+        }
+
+        .home-question-birds-image {
+          width: 138px;
+          height: 138px;
+          border-radius: 38px;
+          box-shadow:
+            0 16px 34px
+            rgba(106, 78, 61, 0.13);
+        }
+
+        .home-question-visual-copy {
+          position: absolute;
+          right: 16px;
+          bottom: 13px;
+          z-index: 1;
+          margin: 0;
+          color: #8a6655;
+          font-family:
+            "Zen Old Mincho", serif;
+          font-size: 11px;
+          font-weight: 600;
+          line-height: 1.7;
+          text-align: right;
         }
 
         .home-status-grid {
@@ -548,6 +714,21 @@ export default function HomePage() {
             box-shadow: none;
           }
 
+          .home-brand-hero {
+            padding: 19px 16px 21px;
+            border-radius: 24px;
+          }
+
+          .home-brand-image {
+            width: 82px;
+            height: 82px;
+            border-radius: 23px;
+          }
+
+          .home-brand-name {
+            font-size: 35px;
+          }
+
           .home-heading {
             font-size: 27px;
           }
@@ -562,16 +743,41 @@ export default function HomePage() {
 
       <section className="home-wrap">
         <div className="home-shell">
-          <header>
-            <p className="tonari-brand" style={{ fontSize: 18 }}>
-              となり
-            </p>
+          <header className="home-brand-hero">
+            <div className="home-brand-logo">
+              <Image
+                src="/icon-512.png"
+                alt="となり"
+                width={112}
+                height={112}
+                priority
+                className="home-brand-image"
+              />
 
-            <h1 className="home-heading">
-              こんにちは。
-              <br />
-              今日はこの質問です。
-            </h1>
+              <div>
+                <p className="home-brand-name">
+                  となり
+                </p>
+
+                <p className="home-brand-tagline">
+                  ふたりの気持ちを、
+                  <br />
+                  毎日そっとつなぐアプリ
+                </p>
+              </div>
+            </div>
+
+            <div className="home-brand-message">
+              <p className="home-brand-message-label">
+                TODAY&apos;S TONARI
+              </p>
+
+              <h1 className="home-heading">
+                こんにちは。
+                <br />
+                今日はこの質問です。
+              </h1>
+            </div>
           </header>
 
           {status === "loading" && (
@@ -663,8 +869,25 @@ export default function HomePage() {
                 onClick={handleMainAction}
                 disabled={status === "waiting_partner_answer"}
               >
-                <div style={{ height: 205, padding: 12 }}>
-                  <HomeIllustration />
+                <div className="home-question-visual">
+                  <div className="home-question-orbit home-question-orbit-a" />
+                  <div className="home-question-orbit home-question-orbit-b" />
+
+                  <div className="home-question-birds">
+                    <Image
+                      src="/icon-512.png"
+                      alt=""
+                      width={148}
+                      height={148}
+                      className="home-question-birds-image"
+                    />
+                  </div>
+
+                  <p className="home-question-visual-copy">
+                    今日のひとことが、
+                    <br />
+                    明日のふたりをもっと近くに。
+                  </p>
                 </div>
 
                 <div
