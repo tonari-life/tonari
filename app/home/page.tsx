@@ -27,6 +27,11 @@ type Answer = {
   answer_text: string;
 };
 
+type Profile = {
+  id: string;
+  display_name: string | null;
+};
+
 type HomeStatus =
   | "loading"
   | "no_question"
@@ -345,6 +350,8 @@ export default function HomePage() {
   const [couple, setCouple] = useState<Couple | null>(null);
   const [myAnswered, setMyAnswered] = useState(false);
   const [partnerAnswered, setPartnerAnswered] = useState(false);
+  const [myName, setMyName] = useState("あなた");
+  const [partnerName, setPartnerName] = useState("パートナー");
   const [status, setStatus] = useState<HomeStatus>("loading");
   const [message, setMessage] = useState("");
   const [lastUpdated, setLastUpdated] = useState("");
@@ -388,6 +395,8 @@ export default function HomePage() {
           setCouple(null);
           setMyAnswered(false);
           setPartnerAnswered(false);
+          setMyName("あなた");
+          setPartnerName("パートナー");
           setStatus("no_question");
           setLastUpdated(getCurrentTimeJST());
           return;
@@ -425,6 +434,35 @@ export default function HomePage() {
         if (partnerId) {
           targetUserIds.push(partnerId);
         }
+
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select("id, display_name")
+          .in("id", targetUserIds);
+
+        if (profilesError) {
+          throw new Error(
+            `名前を取得できませんでした：${profilesError.message}`
+          );
+        }
+
+        const profiles = (profilesData ?? []) as Profile[];
+
+        const myProfile = profiles.find(
+          (item) => item.id === userId
+        );
+
+        const partnerProfile = partnerId
+          ? profiles.find((item) => item.id === partnerId)
+          : undefined;
+
+        setMyName(
+          myProfile?.display_name?.trim() || "あなた"
+        );
+
+        setPartnerName(
+          partnerProfile?.display_name?.trim() || "パートナー"
+        );
 
         const { data: answersData, error: answersError } = await supabase
           .from("answers")
@@ -891,7 +929,7 @@ export default function HomePage() {
                       fontWeight: 700,
                     }}
                   >
-                    あなた
+                    {myName}
                   </p>
 
                   <p
@@ -924,7 +962,7 @@ export default function HomePage() {
                       fontWeight: 700,
                     }}
                   >
-                    パートナー
+                    {partnerName}
                   </p>
 
                   <p
