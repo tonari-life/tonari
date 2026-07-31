@@ -146,6 +146,9 @@ export default function HistoryPage() {
   const [myName, setMyName] = useState("あなた");
   const [partnerName, setPartnerName] = useState("パートナー");
   const [openQuestionId, setOpenQuestionId] = useState<number | null>(null);
+  const [expandedInsightIds, setExpandedInsightIds] = useState<Set<number>>(
+    new Set()
+  );
 
   const groupedHistory = useMemo(() => {
     const groups = new Map<string, HistoryItem[]>();
@@ -169,6 +172,59 @@ export default function HistoryPage() {
       ).length,
     [history]
   );
+
+  const currentStreak = useMemo(() => {
+    const completedDates = history
+      .filter(
+        (item) =>
+          item.myAnswer.trim() &&
+          item.partnerAnswer.trim()
+      )
+      .map((item) => item.questionDate)
+      .sort((a, b) => b.localeCompare(a));
+
+    if (completedDates.length === 0) {
+      return 0;
+    }
+
+    let streak = 1;
+
+    for (let index = 1; index < completedDates.length; index += 1) {
+      const previous = new Date(
+        `${completedDates[index - 1]}T00:00:00+09:00`
+      );
+      const current = new Date(
+        `${completedDates[index]}T00:00:00+09:00`
+      );
+
+      const diffDays = Math.round(
+        (previous.getTime() - current.getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+
+      if (diffDays === 1) {
+        streak += 1;
+      } else {
+        break;
+      }
+    }
+
+    return streak;
+  }, [history]);
+
+  const toggleInsight = (questionId: number) => {
+    setExpandedInsightIds((current) => {
+      const next = new Set(current);
+
+      if (next.has(questionId)) {
+        next.delete(questionId);
+      } else {
+        next.add(questionId);
+      }
+
+      return next;
+    });
+  };
 
   const loadHistory = useCallback(async () => {
     try {
@@ -493,7 +549,7 @@ export default function HistoryPage() {
 
         {state === "ready" && (
           <>
-            <section className="history-summary">
+            <section className="history-summary history-summary-three">
               <div className="history-summary-item">
                 <p className="history-summary-number">
                   {history.length}
@@ -514,6 +570,20 @@ export default function HistoryPage() {
                 </p>
                 <p className="history-summary-label">
                   二人で答えた日
+                </p>
+              </div>
+
+              <span
+                className="history-summary-divider"
+                aria-hidden="true"
+              />
+
+              <div className="history-summary-item">
+                <p className="history-summary-number history-streak-number">
+                  {currentStreak}
+                </p>
+                <p className="history-summary-label">
+                  連続記録
                 </p>
               </div>
             </section>
@@ -618,10 +688,35 @@ export default function HistoryPage() {
                                   </div>
                                 </div>
 
-                                <p className="history-insight-text">
+                                <div
+                                  className={`history-insight-text ${
+                                    expandedInsightIds.has(
+                                      item.questionId
+                                    )
+                                      ? "history-insight-text-expanded"
+                                      : ""
+                                  }`}
+                                >
                                   {item.insight ||
                                     "この日のAIコメントはまだ保存されていません。"}
-                                </p>
+                                </div>
+
+                                {item.insight && (
+                                  <button
+                                    type="button"
+                                    className="history-insight-toggle"
+                                    onClick={() =>
+                                      toggleInsight(item.questionId)
+                                    }
+                                    aria-expanded={expandedInsightIds.has(
+                                      item.questionId
+                                    )}
+                                  >
+                                    {expandedInsightIds.has(item.questionId)
+                                      ? "閉じる"
+                                      : "続きを読む"}
+                                  </button>
+                                )}
                               </section>
                             </div>
                           )}
@@ -1020,6 +1115,15 @@ export default function HistoryPage() {
             0 13px 32px rgba(92, 67, 53, 0.08);
         }
 
+        .history-summary-three {
+          grid-template-columns:
+            minmax(0, 1fr)
+            auto
+            minmax(0, 1fr)
+            auto
+            minmax(0, 1fr);
+        }
+
         .history-summary-item {
           text-align: center;
         }
@@ -1039,6 +1143,14 @@ export default function HistoryPage() {
           font-size: 11px;
           font-weight: 700;
           letter-spacing: 0.05em;
+        }
+
+        .history-streak-number::before {
+          content: "✦";
+          margin-right: 4px;
+          color: #8ea184;
+          font-size: 15px;
+          vertical-align: 3px;
         }
 
         .history-summary-divider {
@@ -1304,8 +1416,10 @@ export default function HistoryPage() {
         }
 
         .history-insight-text {
+          display: -webkit-box;
           margin: 15px 0 0;
           padding: 15px 16px;
+          overflow: hidden;
           border: 1px solid rgba(255, 255, 255, 0.78);
           border-radius: 16px;
           background: rgba(255, 255, 255, 0.58);
@@ -1314,6 +1428,33 @@ export default function HistoryPage() {
           line-height: 2;
           white-space: pre-wrap;
           overflow-wrap: anywhere;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 4;
+        }
+
+        .history-insight-text-expanded {
+          display: block;
+          overflow: visible;
+          -webkit-line-clamp: unset;
+        }
+
+        .history-insight-toggle {
+          display: block;
+          margin: 11px auto 0;
+          padding: 8px 14px;
+          border: 1px solid rgba(160, 184, 150, 0.58);
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.7);
+          color: #64775d;
+          font: inherit;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          cursor: pointer;
+        }
+
+        .history-insight-toggle:hover {
+          background: rgba(255, 255, 255, 0.95);
         }
 
         .history-ending-card {
@@ -1489,11 +1630,19 @@ export default function HistoryPage() {
 
         @media (max-width: 370px) {
           .history-summary {
-            padding-inline: 12px;
+            padding-inline: 9px;
           }
 
           .history-summary-number {
-            font-size: 27px;
+            font-size: 24px;
+          }
+
+          .history-summary-label {
+            font-size: 9px;
+          }
+
+          .history-summary-divider {
+            height: 36px;
           }
 
           .history-card-toggle {
