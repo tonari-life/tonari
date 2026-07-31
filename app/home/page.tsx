@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { getCurrentTimeJST, getTodayJST } from "../../lib/date";
@@ -25,11 +26,6 @@ type Couple = {
 type Answer = {
   user_id: string;
   answer_text: string;
-};
-
-type Profile = {
-  id: string;
-  display_name: string | null;
 };
 
 type HomeStatus =
@@ -67,174 +63,39 @@ function HomeIllustration() {
       </defs>
 
       <rect width="520" height="300" rx="34" fill="url(#roomBg)" />
-
-      <rect
-        x="35"
-        y="46"
-        width="150"
-        height="125"
-        rx="6"
-        fill="#fffdfb"
-        opacity="0.92"
-      />
-
-      <path
-        d="M85 46V171M135 46V171M35 108H185"
-        stroke="#eadfd7"
-        strokeWidth="6"
-      />
-
+      <rect x="35" y="46" width="150" height="125" rx="6" fill="#fffdfb" opacity="0.92" />
+      <path d="M85 46V171M135 46V171M35 108H185" stroke="#eadfd7" strokeWidth="6" />
       <path d="M262 0V35" stroke="#a98a78" strokeWidth="5" />
-
-      <path
-        d="M219 72C225 45 239 34 262 34C285 34 299 45 305 72Z"
-        fill="#c9a88f"
-      />
-
-      <ellipse
-        cx="262"
-        cy="76"
-        rx="16"
-        ry="8"
-        fill="#f4dfc8"
-        opacity="0.75"
-      />
-
-      <path
-        d="M437 222V112"
-        stroke="#7f9278"
-        strokeWidth="7"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M437 145C460 139 473 121 472 100C449 102 437 119 437 145Z"
-        fill="#a9b99f"
-      />
-
-      <path
-        d="M437 173C412 168 398 151 398 129C421 130 436 147 437 173Z"
-        fill="#bcc9b5"
-      />
-
-      <path
-        d="M437 198C460 194 475 180 478 160C456 158 440 173 437 198Z"
-        fill="#9eae97"
-      />
-
+      <path d="M219 72C225 45 239 34 262 34C285 34 299 45 305 72Z" fill="#c9a88f" />
+      <ellipse cx="262" cy="76" rx="16" ry="8" fill="#f4dfc8" opacity="0.75" />
+      <path d="M437 222V112" stroke="#7f9278" strokeWidth="7" strokeLinecap="round" />
+      <path d="M437 145C460 139 473 121 472 100C449 102 437 119 437 145Z" fill="#a9b99f" />
+      <path d="M437 173C412 168 398 151 398 129C421 130 436 147 437 173Z" fill="#bcc9b5" />
+      <path d="M437 198C460 194 475 180 478 160C456 158 440 173 437 198Z" fill="#9eae97" />
       <rect x="412" y="216" width="50" height="34" rx="10" fill="#d7bca9" />
-
-      <ellipse
-        cx="260"
-        cy="248"
-        rx="185"
-        ry="15"
-        fill="#e6d7cc"
-        opacity="0.65"
-      />
-
+      <ellipse cx="260" cy="248" rx="185" ry="15" fill="#e6d7cc" opacity="0.65" />
       <rect x="106" y="220" width="308" height="16" rx="8" fill="#a88672" />
-
-      <path
-        d="M133 236V281M387 236V281"
-        stroke="#7d6253"
-        strokeWidth="12"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M150 241C145 194 160 155 199 144C226 137 253 153 263 181L275 241Z"
-        fill="#8f7464"
-      />
-
+      <path d="M133 236V281M387 236V281" stroke="#7d6253" strokeWidth="12" strokeLinecap="round" />
+      <path d="M150 241C145 194 160 155 199 144C226 137 253 153 263 181L275 241Z" fill="#8f7464" />
       <circle cx="201" cy="124" r="39" fill="url(#skinA)" />
-
-      <path
-        d="M163 112C165 86 181 71 204 71C226 71 241 83 244 104C232 94 216 91 201 92C188 93 175 100 163 112Z"
-        fill="#59443a"
-      />
-
-      <path
-        d="M166 117C171 106 177 102 184 98"
-        stroke="#59443a"
-        strokeWidth="8"
-        strokeLinecap="round"
-      />
-
+      <path d="M163 112C165 86 181 71 204 71C226 71 241 83 244 104C232 94 216 91 201 92C188 93 175 100 163 112Z" fill="#59443a" />
+      <path d="M166 117C171 106 177 102 184 98" stroke="#59443a" strokeWidth="8" strokeLinecap="round" />
       <circle cx="188" cy="124" r="3.5" fill="#4a3932" />
       <circle cx="216" cy="124" r="3.5" fill="#4a3932" />
-
-      <path
-        d="M190 140C198 146 207 146 215 139"
-        stroke="#8f5542"
-        strokeWidth="4"
-        strokeLinecap="round"
-        fill="none"
-      />
-
-      <path
-        d="M224 155C244 169 253 184 255 202"
-        stroke="#8f7464"
-        strokeWidth="16"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M370 241C375 194 360 155 321 144C294 137 267 153 257 181L245 241Z"
-        fill="#d58d71"
-      />
-
+      <path d="M190 140C198 146 207 146 215 139" stroke="#8f5542" strokeWidth="4" strokeLinecap="round" fill="none" />
+      <path d="M224 155C244 169 253 184 255 202" stroke="#8f7464" strokeWidth="16" strokeLinecap="round" />
+      <path d="M370 241C375 194 360 155 321 144C294 137 267 153 257 181L245 241Z" fill="#d58d71" />
       <circle cx="319" cy="124" r="39" fill="url(#skinB)" />
-
-      <path
-        d="M283 110C286 82 304 67 326 69C348 71 362 86 363 110C349 99 336 95 321 95C306 95 294 100 283 110Z"
-        fill="#5d4539"
-      />
-
-      <path
-        d="M355 111C362 122 362 146 357 163C350 155 344 145 341 134Z"
-        fill="#5d4539"
-      />
-
+      <path d="M283 110C286 82 304 67 326 69C348 71 362 86 363 110C349 99 336 95 321 95C306 95 294 100 283 110Z" fill="#5d4539" />
+      <path d="M355 111C362 122 362 146 357 163C350 155 344 145 341 134Z" fill="#5d4539" />
       <circle cx="305" cy="124" r="3.5" fill="#4a3932" />
       <circle cx="333" cy="124" r="3.5" fill="#4a3932" />
-
-      <path
-        d="M305 140C313 146 322 146 330 139"
-        stroke="#8f5542"
-        strokeWidth="4"
-        strokeLinecap="round"
-        fill="none"
-      />
-
-      <path
-        d="M296 155C276 169 267 184 265 202"
-        stroke="#d58d71"
-        strokeWidth="16"
-        strokeLinecap="round"
-      />
-
+      <path d="M305 140C313 146 322 146 330 139" stroke="#8f5542" strokeWidth="4" strokeLinecap="round" fill="none" />
+      <path d="M296 155C276 169 267 184 265 202" stroke="#d58d71" strokeWidth="16" strokeLinecap="round" />
       <rect x="231" y="194" width="52" height="34" rx="11" fill="#fffdfb" />
-
-      <path
-        d="M283 201H292C302 201 310 209 310 219C310 229 302 237 292 237H283"
-        stroke="#ad8f7e"
-        strokeWidth="6"
-        fill="none"
-      />
-
-      <path
-        d="M244 186C236 176 244 168 249 162M263 186C255 176 263 168 268 162"
-        stroke="#b79b8c"
-        strokeWidth="5"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M260 50C265 37 281 37 286 50C291 64 276 74 260 85C244 74 229 64 234 50C239 37 255 37 260 50Z"
-        fill="#df9f82"
-      />
-
+      <path d="M283 201H292C302 201 310 209 310 219C310 229 302 237 292 237H283" stroke="#ad8f7e" strokeWidth="6" fill="none" />
+      <path d="M244 186C236 176 244 168 249 162M263 186C255 176 263 168 268 162" stroke="#b79b8c" strokeWidth="5" strokeLinecap="round" />
+      <path d="M260 50C265 37 281 37 286 50C291 64 276 74 260 85C244 74 229 64 234 50C239 37 255 37 260 50Z" fill="#df9f82" />
       <circle cx="222" cy="86" r="6" fill="#df9f82" opacity="0.7" />
       <circle cx="299" cy="88" r="6" fill="#aebda8" opacity="0.85" />
     </svg>
@@ -243,102 +104,35 @@ function HomeIllustration() {
 
 function LockIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      style={{ width: 18, height: 18 }}
-    >
-      <path
-        d="M7 10V8a5 5 0 0 1 10 0v2M6 10h12v10H6z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 18, height: 18 }}>
+      <path d="M7 10V8a5 5 0 0 1 10 0v2M6 10h12v10H6z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 function ChevronIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      style={{ width: 18, height: 18 }}
-    >
-      <path
-        d="m9 5 7 7-7 7"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
+    <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 18, height: 18 }}>
+      <path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
 }
 
 function PeopleIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      style={{ width: 20, height: 20 }}
-    >
-      <circle
-        cx="9"
-        cy="8"
-        r="3"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-
-      <circle
-        cx="17"
-        cy="9"
-        r="2.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-
-      <path
-        d="M3.5 19c.5-3.5 2.4-5.3 5.5-5.3s5 1.8 5.5 5.3M14 15c.8-.8 1.8-1.2 3-1.2 2.3 0 3.7 1.4 4 4.2"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
+    <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
+      <circle cx="9" cy="8" r="3" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="17" cy="9" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M3.5 19c.5-3.5 2.4-5.3 5.5-5.3s5 1.8 5.5 5.3M14 15c.8-.8 1.8-1.2 3-1.2 2.3 0 3.7 1.4 4 4.2" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
     </svg>
   );
 }
 
 function SettingsIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      style={{ width: 20, height: 20 }}
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="3"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-
-      <path
-        d="M19 13.5v-3l-2-.7a7.5 7.5 0 0 0-.7-1.7l.9-1.9-2.1-2.1-1.9.9a7.5 7.5 0 0 0-1.7-.7L10.5 2h-3l-.7 2a7.5 7.5 0 0 0-1.7.7l-1.9-.9-2.1 2.1.9 1.9a7.5 7.5 0 0 0-.7 1.7L0 10.5v3l2 .7a7.5 7.5 0 0 0 .7 1.7l-.9 1.9 2.1 2.1 1.9-.9a7.5 7.5 0 0 0 1.7.7l.7 2h3l.7-2a7.5 7.5 0 0 0 1.7-.7l1.9.9 2.1-2.1-.9-1.9a7.5 7.5 0 0 0 .7-1.7Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        transform="translate(1.5 0)"
-      />
+    <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
+      <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M19 13.5v-3l-2-.7a7.5 7.5 0 0 0-.7-1.7l.9-1.9-2.1-2.1-1.9.9a7.5 7.5 0 0 0-1.7-.7L10.5 2h-3l-.7 2a7.5 7.5 0 0 0-1.7.7l-1.9-.9-2.1 2.1.9 1.9a7.5 7.5 0 0 0-.7 1.7L0 10.5v3l2 .7a7.5 7.5 0 0 0 .7 1.7l-.9 1.9 2.1 2.1 1.9-.9a7.5 7.5 0 0 0 1.7.7l.7 2h3l.7-2a7.5 7.5 0 0 0 1.7-.7l1.9.9 2.1-2.1-.9-1.9a7.5 7.5 0 0 0 .7-1.7Z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" transform="translate(1.5 0)" />
     </svg>
   );
 }
@@ -350,8 +144,6 @@ export default function HomePage() {
   const [couple, setCouple] = useState<Couple | null>(null);
   const [myAnswered, setMyAnswered] = useState(false);
   const [partnerAnswered, setPartnerAnswered] = useState(false);
-  const [myName, setMyName] = useState("あなた");
-  const [partnerName, setPartnerName] = useState("パートナー");
   const [status, setStatus] = useState<HomeStatus>("loading");
   const [message, setMessage] = useState("");
   const [lastUpdated, setLastUpdated] = useState("");
@@ -395,8 +187,6 @@ export default function HomePage() {
           setCouple(null);
           setMyAnswered(false);
           setPartnerAnswered(false);
-          setMyName("あなた");
-          setPartnerName("パートナー");
           setStatus("no_question");
           setLastUpdated(getCurrentTimeJST());
           return;
@@ -434,35 +224,6 @@ export default function HomePage() {
         if (partnerId) {
           targetUserIds.push(partnerId);
         }
-
-        const { data: profilesData, error: profilesError } = await supabase
-          .from("profiles")
-          .select("id, display_name")
-          .in("id", targetUserIds);
-
-        if (profilesError) {
-          throw new Error(
-            `名前を取得できませんでした：${profilesError.message}`
-          );
-        }
-
-        const profiles = (profilesData ?? []) as Profile[];
-
-        const myProfile = profiles.find(
-          (item) => item.id === userId
-        );
-
-        const partnerProfile = partnerId
-          ? profiles.find((item) => item.id === partnerId)
-          : undefined;
-
-        setMyName(
-          myProfile?.display_name?.trim() || "あなた"
-        );
-
-        setPartnerName(
-          partnerProfile?.display_name?.trim() || "パートナー"
-        );
 
         const { data: answersData, error: answersError } = await supabase
           .from("answers")
@@ -705,6 +466,58 @@ export default function HomePage() {
           line-height: 1.45;
         }
 
+        .home-trust-card {
+          margin-top: 18px;
+          padding: 15px 16px;
+          border: 1px solid #dce6d8;
+          border-radius: 18px;
+          background: #f3f7f1;
+          text-align: center;
+        }
+
+        .home-trust-title {
+          margin: 0;
+          color: #64785e;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+        }
+
+        .home-trust-copy {
+          margin: 7px 0 0;
+          color: #788571;
+          font-size: 11px;
+          line-height: 1.75;
+        }
+
+        .home-legal {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 8px 16px;
+          margin-top: 18px;
+          padding-top: 18px;
+          border-top: 1px solid #eee3dc;
+        }
+
+        .home-legal-link {
+          color: #8f7b6e;
+          font-size: 11px;
+          font-weight: 700;
+          text-decoration: none;
+        }
+
+        .home-legal-link:hover {
+          text-decoration: underline;
+        }
+
+        .home-copyright {
+          margin: 10px 0 0;
+          color: #b1a097;
+          font-size: 10px;
+          text-align: center;
+        }
+
         @keyframes homePulse {
           0%,
           100% {
@@ -929,7 +742,7 @@ export default function HomePage() {
                       fontWeight: 700,
                     }}
                   >
-                    {myName}
+                    あなた
                   </p>
 
                   <p
@@ -962,7 +775,7 @@ export default function HomePage() {
                       fontWeight: 700,
                     }}
                   >
-                    {partnerName}
+                    パートナー
                   </p>
 
                   <p
@@ -1083,7 +896,7 @@ export default function HomePage() {
                     </span>
 
                     <span className="home-navigation-copy">
-                      名前・契約・退会を管理します
+                      名前・契約・ログアウトを管理します
                     </span>
                   </span>
                 </span>
@@ -1100,6 +913,29 @@ export default function HomePage() {
               </button>
             </div>
           )}
+
+          <section className="home-trust-card" aria-label="安心して使うための案内">
+            <p className="home-trust-title">
+              二人の答えを、大切に扱います
+            </p>
+            <p className="home-trust-copy">
+              回答は二人の会話のために保存され、
+              AIコメントの生成に必要な範囲で利用されます。
+            </p>
+          </section>
+
+          <nav className="home-legal" aria-label="法務ページ">
+            <Link className="home-legal-link" href="/terms">
+              利用規約
+            </Link>
+            <Link className="home-legal-link" href="/privacy">
+              プライバシーポリシー
+            </Link>
+          </nav>
+
+          <p className="home-copyright">
+            © 2026 となり
+          </p>
         </div>
 
         <p className="tonari-footer-copy">
