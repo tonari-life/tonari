@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import PwaRegister from "./pwa-register";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,10 +18,37 @@ export const metadata: Metadata = {
   description:
     "毎日のひとつの質問に、お互いの想いを答えるだけ。ふたりの気持ちが、もっと近くなる中年夫婦のためのアプリです。",
 
+  applicationName: "となり",
+  manifest: "/manifest.webmanifest",
+
+  appleWebApp: {
+    capable: true,
+    title: "となり",
+    statusBarStyle: "default",
+  },
+
+  formatDetection: {
+    telephone: false,
+  },
+
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      {
+        url: "/favicon.ico",
+      },
+      {
+        url: "/icon-512.png",
+        type: "image/png",
+        sizes: "512x512",
+      },
+    ],
     shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+        type: "image/png",
+      },
+    ],
   },
 
   openGraph: {
@@ -46,6 +74,13 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#fbf6f1",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -57,6 +92,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <PwaRegister />
         {children}
       </body>
     </html>
