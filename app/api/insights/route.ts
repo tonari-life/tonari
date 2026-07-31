@@ -14,30 +14,41 @@ type AnswerRow = {
   answer_text: string;
 };
 
-function extractOutputText(data: unknown) {
-  if (!data || typeof data !== "object") {
-    return "";
-  }
+type OpenAIContentItem = {
+  type?: string;
+  text?: string;
+};
 
-  const response = data as {
-    output_text?: unknown;
-    output?: Array<{
-      content?: Array<{
-        text?: unknown;
-      }>;
-    }>;
-  };
+type OpenAIOutputItem = {
+  type?: string;
+  content?: OpenAIContentItem[];
+};
 
+type OpenAIResponse = {
+  id?: string;
+  status?: string;
+  output_text?: string;
+  output?: OpenAIOutputItem[];
+  error?: unknown;
+  incomplete_details?: unknown;
+};
+
+function extractOutputText(data: OpenAIResponse) {
   if (
-    typeof response.output_text === "string" &&
-    response.output_text.trim()
+    typeof data.output_text === "string" &&
+    data.output_text.trim()
   ) {
-    return response.output_text.trim();
+    return data.output_text.trim();
   }
 
-  const texts =
-    response.output
+  const outputTexts =
+    data.output
       ?.flatMap((item) => item.content ?? [])
+      .filter(
+        (item) =>
+          item.type === "output_text" ||
+          typeof item.text === "string"
+      )
       .map((item) =>
         typeof item.text === "string"
           ? item.text.trim()
@@ -45,7 +56,11 @@ function extractOutputText(data: unknown) {
       )
       .filter(Boolean) ?? [];
 
-  return texts.join("\n").trim();
+  if (outputTexts.length > 0) {
+    return outputTexts.join("\n").trim();
+  }
+
+  return "";
 }
 
 function cleanInsight(text: string) {
@@ -56,8 +71,29 @@ function cleanInsight(text: string) {
     .slice(0, 800);
 }
 
-export async function POST(request: NextRequest) {
+function logStep(
+  step: string,
+  details?: unknown
+) {
+  if (typeof details === "undefined") {
+    console.log(`[insights] ${step}`);
+    return;
+  }
+
+  console.log(
+    `[insights] ${step}`,
+    JSON.stringify(details, null, 2)
+  );
+}
+
+export async function POST(
+  request: NextRequest
+) {
+  const startedAt = Date.now();
+
   try {
+    logStep("request-started");
+
     const supabaseUrl =
       process.env.NEXT_PUBLIC_SUPABASE_URL;
 
@@ -67,6 +103,14 @@ export async function POST(request: NextRequest) {
 
     const openAiApiKey =
       process.env.OPENAI_API_KEY;
+
+    logStep("environment-check", {
+      hasSupabaseUrl: Boolean(supabaseUrl),
+      hasSupabaseSecretKey:
+        Boolean(supabaseSecretKey),
+      hasOpenAiApiKey:
+        Boolean(openAiApiKey),
+    });
 
     if (
       !supabaseUrl ||
@@ -92,6 +136,8 @@ export async function POST(request: NextRequest) {
         : "";
 
     if (!accessToken) {
+      logStep("missing-access-token");
+
       return NextResponse.json(
         {
           ok: false,
@@ -120,6 +166,10 @@ export async function POST(request: NextRequest) {
     );
 
     if (userError || !user) {
+      logStep("user-check-failed", {
+        message: userError?.message,
+      });
+
       return NextResponse.json(
         {
           ok: false,
@@ -130,16 +180,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    logStep("user-confirmed", {
+      userId: user.id,
+    });
+
     let body: InsightRequest;
 
     try {
       body =
         (await request.json()) as InsightRequest;
-    } catch {
+    } catch (error) {
+      logStep("invalid-json", {
+        message:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      });
+
       return NextResponse.json(
         {
           ok: false,
-          error: "送信内容が正しくありません。",
+          error:
+            "送信内容が正しくありません。",
         },
         { status: 400 }
       );
@@ -154,6 +216,11 @@ export async function POST(request: NextRequest) {
       typeof body.questionId === "number"
         ? body.questionId
         : Number.NaN;
+
+    logStep("request-body", {
+      coupleId,
+      questionId,
+    });
 
     if (
       !coupleId ||
@@ -224,6 +291,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    logStep("couple-confirmed", {
+      coupleId: couple.id,
+      ownerId: couple.owner_id,
+      partnerId: couple.partner_id,
+    });
+
     const {
       data: existingInsight,
       error: existingInsightError,
@@ -243,6 +316,8 @@ export async function POST(request: NextRequest) {
     if (
       existingInsight?.insight_text?.trim()
     ) {
+      logStep("cached-insight-returned");
+
       return NextResponse.json({
         ok: true,
         cached: true,
@@ -321,6 +396,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    logStep("answers-confirmed", {
+      ownerAnswerLength:
+        ownerAnswer.length,
+      partnerAnswerLength:
+        partnerAnswer.length,
+    });
+
     const {
       data: profilesData,
       error: profilesError,
@@ -363,13 +445,19 @@ export async function POST(request: NextRequest) {
       "・対立をあおらず、どちらか一方を責めない",
       "・共通点と違いの両方を肯定的に扱う",
       "・最後に、今日できる小さな会話のきっかけを一つ提案する",
-      "・見出し、箇条書き、名前の後ろの「さん」は不要",
+      "・見出し、箇条書きは使わない",
+      "・名前の後ろに「さん」を付けない",
       "・回答にない事実を作らない",
       "",
       `質問：${question.question_text}`,
       `${ownerName}の回答：${ownerAnswer}`,
       `${partnerName}の回答：${partnerAnswer}`,
     ].join("\n");
+
+    logStep("openai-request-started", {
+      model: "gpt-5-mini",
+      promptLength: prompt.length,
+    });
 
     const openAiResponse = await fetch(
       "https://api.openai.com/v1/responses",
@@ -384,19 +472,85 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           model: "gpt-5-mini",
           input: prompt,
-          max_output_tokens: 500,
+          reasoning: {
+            effort: "low",
+          },
+          max_output_tokens: 1000,
         }),
         cache: "no-store",
       }
     );
 
-    const openAiData =
-      (await openAiResponse.json()) as unknown;
+    const openAiRawText =
+      await openAiResponse.text();
+
+    let openAiData: OpenAIResponse = {};
+
+    try {
+      openAiData = JSON.parse(
+        openAiRawText
+      ) as OpenAIResponse;
+    } catch {
+      logStep(
+        "openai-invalid-json",
+        {
+          status:
+            openAiResponse.status,
+          body:
+            openAiRawText.slice(
+              0,
+              2000
+            ),
+        }
+      );
+
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "となりAIから正しい形式の返答を受け取れませんでした。",
+        },
+        { status: 502 }
+      );
+    }
+
+    logStep("openai-response", {
+      httpStatus:
+        openAiResponse.status,
+      responseId:
+        openAiData.id,
+      responseStatus:
+        openAiData.status,
+      outputTextLength:
+        openAiData.output_text?.length ??
+        0,
+      outputTypes:
+        openAiData.output?.map(
+          (item) => ({
+            type: item.type,
+            contentTypes:
+              item.content?.map(
+                (content) =>
+                  content.type
+              ) ?? [],
+            textLengths:
+              item.content?.map(
+                (content) =>
+                  content.text?.length ??
+                  0
+              ) ?? [],
+          })
+        ) ?? [],
+      incompleteDetails:
+        openAiData.incomplete_details,
+      apiError:
+        openAiData.error,
+    });
 
     if (!openAiResponse.ok) {
       console.error(
-        "OpenAI API error:",
-        openAiData
+        "[insights] OpenAI API error",
+        openAiRawText
       );
 
       return NextResponse.json(
@@ -409,11 +563,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const insight = cleanInsight(
-      extractOutputText(openAiData)
-    );
+    const extractedText =
+      extractOutputText(openAiData);
+
+    const insight =
+      cleanInsight(extractedText);
+
+    logStep("text-extraction", {
+      extractedLength:
+        extractedText.length,
+      cleanedLength:
+        insight.length,
+      preview:
+        insight.slice(0, 200),
+    });
 
     if (insight.length < 20) {
+      console.error(
+        "[insights] Empty OpenAI output",
+        openAiRawText
+      );
+
       return NextResponse.json(
         {
           ok: false,
@@ -423,6 +593,13 @@ export async function POST(request: NextRequest) {
         { status: 502 }
       );
     }
+
+    logStep("supabase-save-started", {
+      coupleId,
+      questionId,
+      insightLength:
+        insight.length,
+    });
 
     const {
       data: savedInsight,
@@ -446,10 +623,24 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (saveError) {
+      logStep("supabase-save-failed", {
+        message: saveError.message,
+        code: saveError.code,
+        details: saveError.details,
+        hint: saveError.hint,
+      });
+
       throw new Error(
         `AIコメントを保存できませんでした：${saveError.message}`
       );
     }
+
+    logStep("request-completed", {
+      durationMs:
+        Date.now() - startedAt,
+      savedLength:
+        savedInsight.insight_text.length,
+    });
 
     return NextResponse.json({
       ok: true,
@@ -459,7 +650,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error(
-      "となりAI APIエラー:",
+      "[insights] unhandled-error",
       error
     );
 
