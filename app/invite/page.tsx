@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
@@ -158,7 +158,7 @@ function LinkIllustration() {
   );
 }
 
-export default function InvitePage() {
+function InvitePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -1174,5 +1174,21 @@ export default function InvitePage() {
         }
       `}</style>
     </AppShell>
+  );
+}
+
+export default function InvitePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="tonari-page">
+          <p className="tonari-copy">
+            招待情報を読み込んでいます…
+          </p>
+        </main>
+      }
+    >
+      <InvitePageContent />
+    </Suspense>
   );
 }
