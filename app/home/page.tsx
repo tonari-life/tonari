@@ -1045,7 +1045,7 @@ export default function HomePage() {
                     </span>
 
                     <span className="home-navigation-copy">
-                      名前・契約・ログアウトを管理します
+                      名前・契約・退会を管理します
                     </span>
                   </span>
                 </span>
