@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
 import AppShell from "../../components/layout/AppShell";
@@ -160,6 +160,7 @@ function LinkIllustration() {
 
 export default function InvitePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [loading, setLoading] = useState(true);
   const [creatingInvite, setCreatingInvite] =
@@ -177,6 +178,20 @@ export default function InvitePage() {
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] =
     useState<MessageTone>("info");
+
+  useEffect(() => {
+    const codeFromUrl = searchParams.get("code");
+
+    if (!codeFromUrl) {
+      return;
+    }
+
+    setJoinCode(normalizeInviteCode(codeFromUrl));
+    setMessageTone("info");
+    setMessage(
+      "招待コードを読み込みました。「このコードで参加する」を押してください。"
+    );
+  }, [searchParams]);
 
   useEffect(() => {
     let active = true;
@@ -348,16 +363,22 @@ export default function InvitePage() {
       return;
     }
 
+    const inviteUrl =
+      `${window.location.origin}/invite?code=` +
+      encodeURIComponent(couple.invite_code);
+
     const shareText =
-      `「となり」で一緒に使う招待コードです。\n\n` +
-      `${couple.invite_code}\n\n` +
-      `アプリの招待画面で入力してください。`;
+      `「となり」に招待します。\n\n` +
+      `下のリンクをスマホで開いてください。\n` +
+      `${inviteUrl}\n\n` +
+      `招待コード：${couple.invite_code}`;
 
     try {
       if (navigator.share) {
         await navigator.share({
-          title: "となりの招待コード",
+          title: "となりへ招待",
           text: shareText,
+          url: inviteUrl,
         });
 
         return;
@@ -369,7 +390,7 @@ export default function InvitePage() {
 
       setMessageTone("success");
       setMessage(
-        "招待メッセージをコピーしました。"
+        "招待リンクをコピーしました。LINEなどに貼り付けて送ってください。"
       );
     } catch (error) {
       if (
@@ -386,7 +407,7 @@ export default function InvitePage() {
 
       setMessageTone("error");
       setMessage(
-        "招待メッセージを共有できませんでした。"
+        "招待リンクを共有できませんでした。"
       );
     }
   };
@@ -627,7 +648,7 @@ export default function InvitePage() {
                   className="tonari-button tonari-button-brown invite-share-button"
                   onClick={shareInviteCode}
                 >
-                  招待コードを送る
+                  招待リンクを送る
                 </button>
 
                 <div className="invite-waiting">

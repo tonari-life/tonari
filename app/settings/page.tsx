@@ -142,8 +142,6 @@ export default function SettingsPage() {
   const [savingName, setSavingName] = useState(false);
   const [openingPortal, setOpeningPortal] =
     useState(false);
-  const [loggingOut, setLoggingOut] =
-    useState(false);
   const [deletingAccount, setDeletingAccount] =
     useState(false);
 
@@ -439,39 +437,6 @@ export default function SettingsPage() {
       );
     } finally {
       setOpeningPortal(false);
-    }
-  };
-
-  const logout = async () => {
-    try {
-      setLoggingOut(true);
-      setMessage("");
-
-      const { error } =
-        await supabase.auth.signOut();
-
-      if (error) {
-        throw new Error(
-          `ログアウトできませんでした：${error.message}`
-        );
-      }
-
-      router.replace("/");
-      router.refresh();
-    } catch (error) {
-      console.error(
-        "ログアウトエラー:",
-        error
-      );
-
-      setMessageTone("error");
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "ログアウトに失敗しました。"
-      );
-
-      setLoggingOut(false);
     }
   };
 
@@ -814,37 +779,6 @@ export default function SettingsPage() {
               </button>
             </section>
 
-            <section className="settings-card">
-              <div className="settings-card-heading">
-                <div className="settings-icon settings-icon-logout">
-                  <span aria-hidden="true">
-                    ↪
-                  </span>
-                </div>
-
-                <div>
-                  <h2 className="settings-card-title">
-                    ログアウト
-                  </h2>
-
-                  <p className="settings-card-description">
-                    この端末からログアウトします。
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="tonari-button tonari-button-soft settings-logout-button"
-                onClick={logout}
-                disabled={loggingOut}
-              >
-                {loggingOut
-                  ? "ログアウトしています…"
-                  : "ログアウトする"}
-              </button>
-            </section>
-
             <section className="settings-danger-card">
               <div className="settings-card-heading">
                 <div className="settings-icon settings-icon-danger">
@@ -1155,10 +1089,6 @@ export default function SettingsPage() {
           color: #9b715e;
         }
 
-        .settings-icon-logout {
-          background: #e9f0e6;
-          color: #698064;
-        }
 
         .settings-icon-danger {
           background: #f8dfdc;
@@ -1338,9 +1268,6 @@ export default function SettingsPage() {
         }
 
         .settings-save-button,
-        .settings-logout-button {
-          margin-top: 17px;
-        }
 
         .settings-delete-list {
           margin: 20px 0 0;
