@@ -15,9 +15,30 @@ type OpenAIOutput = {
 };
 
 type OpenAIResponse = {
+  id?: string;
+  status?: string;
   output_text?: string;
   output?: OpenAIOutput[];
+  error?: unknown;
+  incomplete_details?: unknown;
 };
+
+const FALLBACK_QUESTIONS = [
+  "最近、二人で一緒に笑ったことは何ですか？",
+  "今度の休みに、二人でしてみたいことは何ですか？",
+  "相手に最近ありがとうと思ったことは何ですか？",
+  "子どもの頃に好きだった遊びは何ですか？",
+  "最近、相手に聞いてみたいと思ったことは何ですか？",
+  "二人でまた行きたい場所はどこですか？",
+  "今日あった小さな良いことは何ですか？",
+  "相手の素敵だと思うところを一つ挙げるなら何ですか？",
+  "最近食べておいしかったものは何ですか？",
+  "これから二人で楽しみにしたいことは何ですか？",
+  "一日の中で一番ほっとする時間はいつですか？",
+  "今、相手に伝えたい優しいひと言は何ですか？",
+  "二人の思い出で、もう一度体験したい日はいつですか？",
+  "最近、頑張ったと思うことは何ですか？",
+];
 
 function getTodayJST() {
   return new Intl.DateTimeFormat("en-CA", {
@@ -36,18 +57,17 @@ function extractOutputText(data: OpenAIResponse) {
     return data.output_text.trim();
   }
 
-  for (const outputItem of data.output ?? []) {
-    for (const contentItem of outputItem.content ?? []) {
-      if (
-        contentItem.type === "output_text" &&
+  const texts =
+    data.output
+      ?.flatMap((outputItem) => outputItem.content ?? [])
+      .map((contentItem) =>
         typeof contentItem.text === "string"
-      ) {
-        return contentItem.text;
-      }
-    }
-  }
+          ? contentItem.text.trim()
+          : ""
+      )
+      .filter(Boolean) ?? [];
 
-  return "";
+  return texts.join("\n").trim();
 }
 
 function cleanQuestion(value: string) {
@@ -57,16 +77,44 @@ function cleanQuestion(value: string) {
     .replace(/```$/i, "")
     .replace(/^質問[:：]\s*/, "")
     .replace(/^[0-9０-９]+[.．、)]\s*/, "")
-    .replace(/^["'「『]+/, "")
-    .replace(/["'」』]+$/, "")
+    .replace(/^[\"'「『]+/, "")
+    .replace(/[\"'」』]+$/, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function selectFallbackQuestion(
+  today: string,
+  recentQuestionTexts: string[]
+) {
+  const dayNumber = Number(today.replaceAll("-", ""));
+  const startIndex = Number.isFinite(dayNumber)
+    ? dayNumber % FALLBACK_QUESTIONS.length
+    : 0;
+
+  for (
+    let offset = 0;
+    offset < FALLBACK_QUESTIONS.length;
+    offset += 1
+  ) {
+    const candidate =
+      FALLBACK_QUESTIONS[
+        (startIndex + offset) % FALLBACK_QUESTIONS.length
+      ];
+
+    if (!recentQuestionTexts.includes(candidate)) {
+      return candidate;
+    }
+  }
+
+  return FALLBACK_QUESTIONS[startIndex];
 }
 
 export async function GET(request: Request) {
   try {
     const cronSecret = process.env.CRON_SECRET;
-    const authorization = request.headers.get("authorization");
+    const authorization =
+      request.headers.get("authorization");
 
     if (
       !cronSecret ||
@@ -144,20 +192,26 @@ export async function GET(request: Request) {
       });
     }
 
-    const { data: recentQuestions, error: recentError } =
-      await supabase
-        .from("daily_questions")
-        .select("question_text, question_date")
-        .order("question_date", {
-          ascending: false,
-        })
-        .limit(30);
+    const {
+      data: recentQuestions,
+      error: recentError,
+    } = await supabase
+      .from("daily_questions")
+      .select("question_text, question_date")
+      .order("question_date", {
+        ascending: false,
+      })
+      .limit(30);
 
     if (recentError) {
       throw new Error(
         `過去の質問取得に失敗しました：${recentError.message}`
       );
     }
+
+    const recentQuestionTexts = (recentQuestions ?? []).map(
+      (item) => item.question_text.trim()
+    );
 
     const recentQuestionList = (recentQuestions ?? [])
       .map(
@@ -187,79 +241,124 @@ export async function GET(request: Request) {
 ${recentQuestionList || "まだありません"}
 `.trim();
 
-    const openAIResponse = await fetch(
-      "https://api.openai.com/v1/responses",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${openAIApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-5-mini",
-          input: prompt,
-          max_output_tokens: 120,
-        }),
+    let questionText = "";
+    let usedFallback = false;
+
+    try {
+      const openAIResponse = await fetch(
+        "https://api.openai.com/v1/responses",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${openAIApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "gpt-5-mini",
+            input: prompt,
+            reasoning: {
+              effort: "low",
+            },
+            max_output_tokens: 600,
+          }),
+          cache: "no-store",
+        }
+      );
+
+      const rawText = await openAIResponse.text();
+
+      if (!openAIResponse.ok) {
+        console.error(
+          "OpenAI APIエラー:",
+          openAIResponse.status,
+          rawText.slice(0, 2000)
+        );
+      } else {
+        const openAIData =
+          JSON.parse(rawText) as OpenAIResponse;
+
+        console.log(
+          "質問生成OpenAIレスポンス:",
+          JSON.stringify({
+            id: openAIData.id,
+            status: openAIData.status,
+            outputTextLength:
+              openAIData.output_text?.length ?? 0,
+            outputTypes:
+              openAIData.output?.map((item) => ({
+                type: item.type,
+                contentTypes:
+                  item.content?.map(
+                    (content) => content.type
+                  ) ?? [],
+                textLengths:
+                  item.content?.map(
+                    (content) =>
+                      content.text?.length ?? 0
+                  ) ?? [],
+              })) ?? [],
+            incompleteDetails:
+              openAIData.incomplete_details,
+            apiError: openAIData.error,
+          })
+        );
+
+        questionText = cleanQuestion(
+          extractOutputText(openAIData)
+        );
       }
-    );
-
-    if (!openAIResponse.ok) {
-      const errorText = await openAIResponse.text();
-
-      throw new Error(
-        `OpenAI APIエラー (${openAIResponse.status})：${errorText.slice(
-          0,
-          500
-        )}`
+    } catch (openAIError) {
+      console.error(
+        "OpenAI質問生成処理エラー:",
+        openAIError
       );
     }
 
-    const openAIData =
-      (await openAIResponse.json()) as OpenAIResponse;
+    const generatedLength = [...questionText].length;
+    const isInvalidQuestion =
+      generatedLength < 15 ||
+      generatedLength > 60 ||
+      questionText.includes("\n") ||
+      recentQuestionTexts.includes(questionText);
 
-    const questionText = cleanQuestion(
-      extractOutputText(openAIData)
-    );
+    if (isInvalidQuestion) {
+      questionText = selectFallbackQuestion(
+        today,
+        recentQuestionTexts
+      );
+      usedFallback = true;
 
-    const questionLength = [...questionText].length;
-
-    if (
-      questionLength < 15 ||
-      questionLength > 60 ||
-      questionText.includes("\n")
-    ) {
-      throw new Error(
-        `生成された質問の形式が不正です：${questionLength}文字`
+      console.warn(
+        "AI質問を利用できなかったため予備質問を使用:",
+        {
+          generatedLength,
+          fallbackQuestion: questionText,
+        }
       );
     }
 
-    const duplicate = (recentQuestions ?? []).some(
-      (item) =>
-        item.question_text.trim() === questionText
-    );
-
-    if (duplicate) {
-      throw new Error(
-        "過去と同じ質問が生成されたため、登録を中止しました。"
-      );
-    }
-
-    const { data: insertedQuestion, error: insertError } =
-      await supabase
-        .from("daily_questions")
-        .insert({
-          question_date: today,
-          question_text: questionText,
-        })
-        .select("id, question_date, question_text")
-        .single();
+    const {
+      data: insertedQuestion,
+      error: insertError,
+    } = await supabase
+      .from("daily_questions")
+      .insert({
+        question_date: today,
+        question_text: questionText,
+        category: "conversation",
+      })
+      .select(
+        "id, question_date, question_text, category"
+      )
+      .single();
 
     if (insertError) {
       if (insertError.code === "23505") {
         return NextResponse.json({
           ok: true,
           created: false,
-          reason: "already_created_by_another_request",
+          reason:
+            "already_created_by_another_request",
           date: today,
         });
       }
@@ -272,6 +371,7 @@ ${recentQuestionList || "まだありません"}
     return NextResponse.json({
       ok: true,
       created: true,
+      usedFallback,
       question: insertedQuestion,
     });
   } catch (error) {
